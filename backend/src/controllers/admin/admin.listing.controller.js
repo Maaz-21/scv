@@ -3,9 +3,7 @@ const Category = require("../../models/Category");
 const auditLogger = require("../../middleware/auditLogger");
 const catchAsync = require("../../utils/catchAsync");
 
-/**
- * Get all pending listings
- */
+// Get all pending listings
 exports.getPendingListings = catchAsync(async (req, res) => {
   const pendingListings = await Listing.find({ status: "pending" })
     .populate("sellerId", "name email")
@@ -19,12 +17,9 @@ exports.getPendingListings = catchAsync(async (req, res) => {
   });
 });
 
-/**
- * Approve a listing
- */
+// Approve a listing
 exports.approveListing = catchAsync(async (req, res) => {
   const { id } = req.params;
-
   const listing = await Listing.findById(id);
   if (!listing) {
     return res.status(404).json({ message: "Listing not found" });
@@ -54,9 +49,7 @@ exports.approveListing = catchAsync(async (req, res) => {
   });
 });
 
-/**
- * Reject a listing
- */
+// Reject a listing
 exports.rejectListing = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { rejectionReason } = req.body;
@@ -94,9 +87,7 @@ exports.rejectListing = catchAsync(async (req, res) => {
   });
 });
 
-/**
- * Override a previous decision (approve or reject)
- */
+// Override a previous decision (approve or reject)
 exports.overrideDecision = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { action, rejectionReason } = req.body;

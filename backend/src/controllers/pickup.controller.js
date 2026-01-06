@@ -1,4 +1,0 @@
-/*schedulePickup()
-updatePickupStatus()
-uploadPickupProof()
- */
