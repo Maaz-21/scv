@@ -1,4 +1,7 @@
-/*
+const router = require("express").Router();
+const { auth } = require("../middleware/auth");
+const { hasRole } = require("../middleware/role");
+
 router.get("/marketplace", browseListings);
 
 router.post(
@@ -14,4 +17,3 @@ router.get(
   hasRole("buyer"),
   myOrders
 );
-*/ 
