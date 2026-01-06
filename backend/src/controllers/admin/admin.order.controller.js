@@ -1,5 +1,6 @@
 const Order = require("../../models/Order");
 const catchAsync = require("../../utils/catchAsync");
+const auditLogger = require("../../middleware/auditLogger");
 
 
  // Get all orders
@@ -44,8 +45,17 @@ exports.updateOrderStatus = catchAsync(async (req, res) => {
     return res.status(404).json({ message: "Order not found" });
   }
 
+  const previousStatus = order.status;
   order.status = status;
   await order.save();
+
+  await auditLogger(
+    req.user._id,
+    "UPDATE_ORDER_STATUS",
+    "Order",
+    order._id,
+    `Order status updated from "${previousStatus}" to "${status}" for listing "${order.listingId.title}"`
+  );
 
   res.json({
     message: "Order status updated successfully",
