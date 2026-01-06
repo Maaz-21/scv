@@ -3,8 +3,8 @@ const cors = require("cors");
 const authRoutes = require("./routes/auth.routes");
 const sellerRoutes = require("./routes/seller.routes");
 const errorHandler = require("./middleware/errorHandler");
-const path = require("path");
-
+const authRoutes = require("./routes/auth.routes");
+const adminRoutes = require("./routes/admin.routes");
 const app = express();
 
 app.use(cors());
@@ -16,6 +16,9 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/seller", sellerRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
+app.use("/auth", authRoutes);
+app.use("/admin", adminRoutes);
 
 app.use(errorHandler);
 

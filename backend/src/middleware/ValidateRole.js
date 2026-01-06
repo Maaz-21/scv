@@ -1,6 +1,3 @@
-/*hasRole("admin")
-hasRole("seller")
-hasRole("buyer")*/ 
 module.exports.hasRole = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user || !req.user.roleName) {
@@ -15,4 +12,4 @@ module.exports.hasRole = (...allowedRoles) => {
 
     next();
   };
-};
+};  

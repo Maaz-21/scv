@@ -1,5 +1,152 @@
-/*getPendingListings()
-approveListing()
-rejectListing()
-overrideDecision()
-*/ 
+const Listing = require("../../models/Listing");
+const Category = require("../../models/Category");
+const auditLogger = require("../../middleware/auditLogger");
+const catchAsync = require("../../utils/catchAsync");
+
+/**
+ * Get all pending listings
+ */
+exports.getPendingListings = catchAsync(async (req, res) => {
+  const pendingListings = await Listing.find({ status: "pending" })
+    .populate("sellerId", "name email")
+    .populate("category", "name")
+    .sort({ createdAt: -1 });
+
+  res.json({
+    message: "Pending listings retrieved successfully",
+    count: pendingListings.length,
+    listings: pendingListings
+  });
+});
+
+/**
+ * Approve a listing
+ */
+exports.approveListing = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  const listing = await Listing.findById(id);
+  if (!listing) {
+    return res.status(404).json({ message: "Listing not found" });
+  }
+
+  if (listing.status !== "pending") {
+    return res.status(400).json({
+      message: `Cannot approve listing with status: ${listing.status}`
+    });
+  }
+
+  listing.status = "approved";
+  listing.approvedBy = req.user._id;
+  await listing.save();
+
+  await auditLogger(
+    req.user._id,
+    "APPROVE_LISTING",
+    "Listing",
+    listing._id,
+    `Listing "${listing.title}" approved`
+  );
+
+  res.json({
+    message: "Listing approved successfully",
+    listing
+  });
+});
+
+/**
+ * Reject a listing
+ */
+exports.rejectListing = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { rejectionReason } = req.body;
+
+  if (!rejectionReason) {
+    return res.status(400).json({ message: "Rejection reason is required" });
+  }
+
+  const listing = await Listing.findById(id);
+  if (!listing) {
+    return res.status(404).json({ message: "Listing not found" });
+  }
+
+  if (listing.status !== "pending") {
+    return res.status(400).json({
+      message: `Cannot reject listing with status: ${listing.status}`
+    });
+  }
+
+  listing.status = "rejected";
+  listing.rejectionReason = rejectionReason;
+  await listing.save();
+
+  await auditLogger(
+    req.user._id,
+    "REJECT_LISTING",
+    "Listing",
+    listing._id,
+    `Listing "${listing.title}" rejected. Reason: ${rejectionReason}`
+  );
+
+  res.json({
+    message: "Listing rejected successfully",
+    listing
+  });
+});
+
+/**
+ * Override a previous decision (approve or reject)
+ */
+exports.overrideDecision = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { action, rejectionReason } = req.body;
+
+  if (!action || !["approve", "reject"].includes(action)) {
+    return res.status(400).json({
+      message: "Valid action (approve/reject) is required"
+    });
+  }
+
+  const listing = await Listing.findById(id);
+  if (!listing) {
+    return res.status(404).json({ message: "Listing not found" });
+  }
+
+  if (!["approved", "pending"].includes(listing.status)) {
+    return res.status(400).json({
+      message: `Cannot override listing with status: ${listing.status}`
+    });
+  }
+
+  const previousStatus = listing.status;
+
+  if (action === "approve") {
+    listing.status = "approved";
+    listing.approvedBy = req.user._id;
+    listing.rejectionReason = undefined;
+  } else {
+    if (!rejectionReason) {
+      return res.status(400).json({
+        message: "Rejection reason is required when overriding to reject"
+      });
+    }
+    listing.status = "rejected";
+    listing.rejectionReason = rejectionReason;
+    listing.approvedBy = undefined;
+  }
+
+  await listing.save();
+
+  await auditLogger(
+    req.user._id,
+    "OVERRIDE_LISTING_DECISION",
+    "Listing",
+    listing._id,
+    `Listing "${listing.title}" overridden from ${previousStatus} to ${listing.status}. ${action === "reject" ? `Reason: ${rejectionReason}` : ""}`
+  );
+
+  res.json({
+    message: "Listing decision overridden successfully",
+    listing
+  });
+});
