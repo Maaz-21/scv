@@ -17,3 +17,5 @@ router.get(
   hasRole("buyer"),
   myOrders
 );
+
+module.exports = router;

@@ -4,6 +4,8 @@ const path= require("path");
 const authRoutes = require("./routes/auth.routes");
 const sellerRoutes = require("./routes/seller.routes");
 const adminRoutes = require("./routes/admin.routes");
+const buyerRoutes = require("./routes/buyer.routes");
+const pickupRoutes = require("./routes/pickup.routes");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -17,6 +19,8 @@ app.get("/health", (req, res) => {
 });
 app.use("/api/auth", authRoutes);
 app.use("/api/seller", sellerRoutes);
+app.use("/api/buyer", buyerRoutes);
+app.use("/api/pickup", pickupRoutes);
 app.use("/admin", adminRoutes);
 
 app.use(errorHandler);
