@@ -33,7 +33,7 @@ exports.login = async (req, res) => {
 
   const match = await bcrypt.compare(password, user.passwordHash);
   if (!match) return res.status(401).json({ message: "Invalid credentials" });
-
+  console.log(user);
   res.json({
     message: "Login successful",
     token: generateToken({ ...user.toObject(), roleName: user.role.name })
