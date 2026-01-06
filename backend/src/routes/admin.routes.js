@@ -10,6 +10,11 @@ const {
   getAllOrders,
   updateOrderStatus
 } = require("../controllers/admin/admin.order.controller");
+const {
+  getStatsSummary
+} = require("../controllers/admin/admin.dashboard.controller");
+
+router.get("/dashboard", auth, hasRole("admin"), getStatsSummary);
 
 router.get("/listings/pending", auth, hasRole("admin"), getPendingListings);
 
