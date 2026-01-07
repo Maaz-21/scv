@@ -4,23 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiPost } from '@/services/apiClient';
-// Assuming AutContext is available. If not, you need to create it.
-// import { useAuth } from '@/context/AuthContext'; 
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginPage() {
     const router = useRouter();
-    // const { login } = useAuth();
-    
-    // Temporary mock to prevent crash if AuthContext is missing
-    // Replace this with the actual useAuth hook from your context
-    const login = (token, user, roleName) => {
-         if (typeof window !== 'undefined') {
-             localStorage.setItem('token', token);
-             localStorage.setItem('user', JSON.stringify(user));
-             localStorage.setItem('role', roleName);
-         }
-         console.log('Logged in:', { token, user, roleName });
-    };
+    const { login } = useAuth();
 
     const [formData, setFormData] = useState({
         email: '',
