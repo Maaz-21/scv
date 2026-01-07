@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const { auth } = require("../middleware/auth");
-const { hasRole } = require("../middleware/role");
+const { hasRole } = require("../middleware/ValidateRole");
+const { browseListings, placeOrder, myOrders } = require("../controllers/buyer/buyer.order.controller");
 
 router.get("/marketplace", browseListings);
 
