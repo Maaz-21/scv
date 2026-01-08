@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiGet, apiPost } from '@/services/apiClient';
 import { useAuth } from '@/hooks/useAuth';
+import AdminNavbar from '@/components/AdminNavbar';
 
 export default function PendingListingsPage() {
     const router = useRouter();
@@ -112,14 +113,15 @@ export default function PendingListingsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+            <AdminNavbar />
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="mb-8">
-                    <div className="bg-gradient-to-r from-[#0A2E52] to-[#0d3a63] rounded-2xl shadow-xl p-8 text-white">
+                    <div className="bg-white rounded-2xl shadow-lg p-8 border-l-4 border-[#FF7F32]">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-4xl font-bold mb-2">Pending Listings</h1>
-                                <p className="text-blue-100">Review and approve seller listings</p>
+                                <h1 className="text-4xl font-bold mb-2 text-gray-800">Pending Listings</h1>
+                                <p className="text-gray-600">Review and approve seller listings</p>
                             </div>
                             <button
                                 onClick={() => router.push('/dashboard/admin')}
