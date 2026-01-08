@@ -22,12 +22,25 @@ export function AuthProvider({ children }) {
 
       if (storedToken && storedUser && storedRole) {
         setToken(storedToken);
-        setUser(JSON.parse(storedUser));
+        // Only parse if storedUser is valid JSON
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (parseError) {
+          console.error("Failed to parse user data, clearing storage:", parseError);
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+          setLoading(false);
+          return;
+        }
         setRole(storedRole);
       }
     } catch (error) {
       console.error("Error loading user from storage:", error);
-      logout();
+      // Clear corrupted data
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
     } finally {
       setLoading(false);
     }
