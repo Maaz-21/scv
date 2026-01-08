@@ -4,7 +4,7 @@ const Role = require("../models/Role");
 const generateToken = require("../utils/GenerateToken");
 
 exports.register = async (req, res) => {
-  const { name, email, password, roleName } = req.body;
+  const { name, email, password, roleName, companyName, phone } = req.body;
 
   const role = await Role.findOne({ name: roleName });
   if (!role) return res.status(400).json({ message: "Invalid role" });
@@ -16,7 +16,9 @@ exports.register = async (req, res) => {
     name,
     email,
     role: role._id,
-    passwordHash: await bcrypt.hash(password, 10)
+    passwordHash: await bcrypt.hash(password, 10),
+    companyName,
+    phone
   });
 
   res.json({
@@ -36,7 +38,13 @@ exports.login = async (req, res) => {
   console.log(user);
   res.json({
     message: "Login successful",
-    token: generateToken({ ...user.toObject(), roleName: user.role.name })
+    token: generateToken({ ...user.toObject(), roleName: user.role.name }),
+    roleName: user.role.name,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email
+    }
   });
 };
 
