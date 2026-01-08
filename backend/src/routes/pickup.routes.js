@@ -2,7 +2,7 @@ const router = require("express").Router();
 const { auth } = require("../middleware/auth");
 const { hasRole } = require("../middleware/ValidateRole");
 const upload = require("../middleware/upload");
-const { schedulePickup, updatePickupStatus, uploadPickupProof } = require("../controllers/pickup/pickup.controller");
+const { schedulePickup, updatePickupStatus ,uploadPickupProof } = require("../controllers/pickup/pickup.controller");
 
 router.post(
   "/:orderId/schedule",

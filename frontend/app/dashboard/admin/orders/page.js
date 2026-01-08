@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiGet, apiPost } from '@/services/apiClient';
 import { useAuth } from '@/hooks/useAuth';
+import AdminNavbar from '@/components/AdminNavbar';
 
 const ORDER_STATUSES = ['initiated', 'confirmed', 'pickup_scheduled', 'picked', 'completed'];
 
@@ -77,21 +78,16 @@ export default function OrdersManagementPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+            <AdminNavbar />
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="mb-8">
-                    <div className="bg-gradient-to-r from-[#0A2E52] to-[#0d3a63] rounded-2xl shadow-xl p-8 text-white">
+                    <div className="bg-white rounded-2xl shadow-lg p-8 border-l-4 border-[#FF7F32]">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-4xl font-bold mb-2">Orders Management</h1>
-                                <p className="text-blue-100">View and manage all marketplace orders</p>
+                                <h1 className="text-4xl font-bold mb-2 text-gray-800">Orders Management</h1>
+                                <p className="text-gray-600">View and manage all marketplace orders</p>
                             </div>
-                            <button
-                                onClick={() => router.push('/dashboard/admin')}
-                                className="px-6 py-3 bg-white text-[#0A2E52] rounded-lg hover:bg-gray-100 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 font-semibold"
-                            >
-                                Back to Dashboard
-                            </button>
                         </div>
                     </div>
                 </div>

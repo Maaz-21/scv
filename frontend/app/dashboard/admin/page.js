@@ -1,196 +1,171 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { apiGet } from '@/services/apiClient';
-import { useAuth } from '@/hooks/useAuth';
+import Link from 'next/link';
+import AdminNavbar from '@/components/AdminNavbar';
 
-export default function AdminDashboardPage() {
-    const router = useRouter();
-    const { role, isAuthenticated, loading: authLoading } = useAuth();
+export default function AdminDashboard() {
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalListings: 0,
+    pendingListings: 0,
+    totalOrders: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-    const [stats, setStats] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
-    useEffect(() => {
-        if (!authLoading) {
-            if (!isAuthenticated) {
-                router.push('/login');
-                return;
-            }
-            if (role !== 'admin') {
-                router.push('/');
-                return;
-            }
-            fetchDashboardStats();
-        }
-    }, [authLoading, isAuthenticated, role, router]);
-
-    const fetchDashboardStats = async () => {
-        try {
-            setLoading(true);
-            const response = await apiGet('/admin/dashboard');
-            setStats(response);
-        } catch (err) {
-            setError(err.message || 'Failed to load dashboard stats');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (authLoading || loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-blue-50">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7F32]"></div>
-            </div>
-        );
+  const fetchStats = async () => {
+    try {
+      const data = await apiGet('/admin/dashboard');
+      setStats(data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (error) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="bg-red-50 border-l-4 border-red-500 p-4">
-                    <p className="text-red-700">{error}</p>
-                </div>
-            </div>
-        );
-    }
-
+  if (loading) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="mb-8">
-                    <div className="bg-gradient-to-r from-[#0A2E52] to-[#0d3a63] rounded-2xl shadow-xl p-8 text-white">
-                        <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
-                        <p className="text-blue-100">Marketplace overview and statistics</p>
-                    </div>
-                </div>
-
-                {stats && (
-                    <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                            <StatCard
-                                title="Total Users"
-                                value={stats.totalUsers || 0}
-                                icon="👥"
-                                gradient="from-blue-500 to-blue-600"
-                            />
-                            <StatCard
-                                title="Total Listings"
-                                value={stats.totalListings || 0}
-                                icon="📦"
-                                gradient="from-purple-500 to-purple-600"
-                            />
-                            <StatCard
-                                title="Pending Listings"
-                                value={stats.pendingListings || 0}
-                                icon="⏳"
-                                gradient="from-yellow-500 to-orange-500"
-                                link="/dashboard/admin/listings/pending"
-                            />
-                            <StatCard
-                                title="Approved Listings"
-                                value={stats.approvedListings || 0}
-                                icon="✅"
-                                gradient="from-green-500 to-emerald-600"
-                            />
-                            <StatCard
-                                title="Total Orders"
-                                value={stats.totalOrders || 0}
-                                icon="🛒"
-                                gradient="from-[#FF7F32] to-[#ff9d5c]"
-                                link="/dashboard/admin/orders"
-                            />
-                            <StatCard
-                                title="Completed Orders"
-                                value={stats.completedOrders || 0}
-                                icon="✓"
-                                gradient="from-[#0A2E52] to-[#0d3a63]"
-                            />
-                        </div>
-
-                        <div className="bg-white rounded-2xl shadow-xl p-8 border-t-4 border-[#FF7F32]">
-                            <h2 className="text-2xl font-bold text-[#0A2E52] mb-6">Quick Actions</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <QuickActionCard
-                                    title="Pending Listings"
-                                    description="Review and approve seller listings"
-                                    buttonText="View Pending"
-                                    onClick={() => router.push('/dashboard/admin/listings/pending')}
-                                    icon="📋"
-                                />
-                                <QuickActionCard
-                                    title="Manage Orders"
-                                    description="View and update order statuses"
-                                    buttonText="View Orders"
-                                    onClick={() => router.push('/dashboard/admin/orders')}
-                                    icon="📊"
-                                />
-                            </div>
-                        </div>
-                    </>
-                )}
-            </div>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7F32]"></div>
+      </div>
     );
-}
+  }
 
-function StatCard({ title, value, icon, gradient, link }) {
-    const router = useRouter();
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <AdminNavbar />
 
-    const cardContent = (
-        <div className="relative overflow-hidden bg-white rounded-xl shadow-lg border border-gray-100 transition-all duration-300 hover:shadow-2xl">
-            <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${gradient} opacity-10 rounded-full -mr-16 -mt-16`}></div>
-            <div className="p-6 relative">
-                <div className="flex items-center justify-between mb-4">
-                    <div className={`bg-gradient-to-br ${gradient} rounded-lg p-3 shadow-md`}>
-                        <span className="text-2xl">{icon}</span>
-                    </div>
-                    {link && (
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                    )}
-                </div>
-                <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-1">{title}</p>
-                <p className="text-3xl font-bold text-gray-900">{value}</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Grid with Colorful Gradients */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Total Users Card */}
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm font-medium uppercase tracking-wide">Total Users</p>
+                <p className="text-4xl font-bold mt-2">{stats.totalUsers}</p>
+              </div>
+              <div className="bg-white/20 p-4 rounded-xl backdrop-blur-sm">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
             </div>
+          </div>
+
+          {/* Total Listings Card */}
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-100 text-sm font-medium uppercase tracking-wide">Total Listings</p>
+                <p className="text-4xl font-bold mt-2">{stats.totalListings}</p>
+              </div>
+              <div className="bg-white/20 p-4 rounded-xl backdrop-blur-sm">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Pending Listings Card */}
+          <div className="bg-gradient-to-br from-[#FF7F32] to-orange-600 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-orange-100 text-sm font-medium uppercase tracking-wide">Pending Listings</p>
+                <p className="text-4xl font-bold mt-2">{stats.pendingListings}</p>
+              </div>
+              <div className="bg-white/20 p-4 rounded-xl backdrop-blur-sm">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Total Orders Card */}
+          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-100 text-sm font-medium uppercase tracking-wide">Total Orders</p>
+                <p className="text-4xl font-bold mt-2">{stats.totalOrders}</p>
+              </div>
+              <div className="bg-white/20 p-4 rounded-xl backdrop-blur-sm">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </div>
+            </div>
+          </div>
         </div>
-    );
 
-    if (link) {
-        return (
-            <div
-                onClick={() => router.push(link)}
-                className="cursor-pointer transform hover:scale-105 transition-transform duration-200"
-            >
-                {cardContent}
-            </div>
-        );
-    }
-
-    return cardContent;
-}
-
-function QuickActionCard({ title, description, buttonText, onClick, icon }) {
-    return (
-        <div className="relative bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-md p-6 border-l-4 border-[#FF7F32] hover:shadow-xl transition-all duration-300 group">
-            <div className="flex items-start">
-                <div className="bg-gradient-to-br from-[#FF7F32] to-[#ff9d5c] rounded-lg p-3 shadow-md text-white text-3xl mr-4 group-hover:scale-110 transition-transform duration-300">
-                    {icon}
+        {/* Quick Actions */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <span className="bg-gradient-to-r from-[#FF7F32] to-orange-600 text-white p-2 rounded-lg">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </span>
+            Quick Actions
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link href="/dashboard/admin/listings/pending">
+              <div className="group bg-gradient-to-br from-[#FF7F32] to-orange-600 rounded-xl p-6 text-white cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
+                <div className="flex items-center gap-4">
+                  <div className="bg-white/20 p-3 rounded-lg backdrop-blur-sm group-hover:bg-white/30 transition-colors">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Review Listings</h3>
+                    <p className="text-orange-100 text-sm">Approve or reject pending</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                    <h3 className="text-xl font-bold text-[#0A2E52] mb-2">{title}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{description}</p>
-                    <button
-                        onClick={onClick}
-                        className="px-6 py-2.5 bg-gradient-to-r from-[#0A2E52] to-[#0d3a63] text-white rounded-lg hover:from-[#0d3a63] hover:to-[#0A2E52] transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 font-semibold text-sm"
-                    >
-                        {buttonText}
-                    </button>
+              </div>
+            </Link>
+
+            <Link href="/dashboard/admin/orders">
+              <div className="group bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
+                <div className="flex items-center gap-4">
+                  <div className="bg-white/20 p-3 rounded-lg backdrop-blur-sm group-hover:bg-white/30 transition-colors">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Manage Orders</h3>
+                    <p className="text-blue-100 text-sm">View and track orders</p>
+                  </div>
                 </div>
-            </div>
+              </div>
+            </Link>
+
+            <Link href="/dashboard/admin/users">
+              <div className="group bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
+                <div className="flex items-center gap-4">
+                  <div className="bg-white/20 p-3 rounded-lg backdrop-blur-sm group-hover:bg-white/30 transition-colors">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Manage Users</h3>
+                    <p className="text-purple-100 text-sm">View all platform users</p>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }
