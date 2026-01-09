@@ -1,65 +1,109 @@
+import Link from "next/link";
+import { Package, Calendar, Tag, Weight, AlertCircle, CheckCircle, Clock, XCircle, DollarSign } from "lucide-react";
+
 export default function SellerListingCard({ listing }) {
-  const { title, category, price, status, images, estimatedWeight } = listing;
+  const { title, category, price, status, images, estimatedWeight, createdAt } = listing;
   const thumbnail = images && images.length > 0 ? images[0] : null;
 
-  const getStatusBadge = (statusState) => {
-    switch (statusState) {
-        case 'submitted':
-            return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Submitted</span>;
-        case 'admin_approved':
-            return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Admin Approved</span>;
-        case 'inspection_passed':
-        case 'live':
-            return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Live / Verified</span>;
-        case 'rejected':
-        case 'inspection_failed':
-            return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Rejected / Failed</span>;
-        case 'sold':
-            return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">Sold</span>;
-        default:
-            return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{statusState}</span>;
+  const STATUS_CONFIG = {
+    submitted: {
+      label: "Submitted (Awaiting Review)",
+      color: "bg-amber-50 text-amber-700 border-amber-200",
+      icon: Clock
+    },
+    admin_approved: {
+      label: "Approved (Inspection Pending)",
+      color: "bg-blue-50 text-blue-700 border-blue-200",
+      icon: CheckCircle
+    },
+    inspection_passed: {
+      label: "Live / Verified",
+      color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      icon: CheckCircle
+    },
+    live: { 
+        label: "Live / Verified",
+        color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+        icon: CheckCircle
+    },
+    sold: {
+      label: "Sold",
+      color: "bg-slate-100 text-slate-600 border-slate-200",
+      icon: Package
+    },
+    rejected: {
+      label: "Rejected",
+      color: "bg-red-50 text-red-700 border-red-200",
+      icon: XCircle
+    },
+    inspection_failed: {
+        label: "Inspection Failed",
+        color: "bg-red-50 text-red-700 border-red-200",
+        icon: AlertCircle
     }
   };
 
+  const config = STATUS_CONFIG[status] || { 
+      label: status, 
+      color: "bg-gray-50 text-gray-600 border-gray-200",
+      icon: AlertCircle
+  };
+  const StatusIcon = config.icon;
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-       <div className="flex flex-col sm:flex-row">
-            <div className="sm:w-48 h-48 bg-gray-200 relative">
-                {thumbnail ? (
-                    <img src={thumbnail} alt={title} className="w-full h-full object-cover" />
-                ) : (
-                    <div className="flex items-center justify-center h-full text-gray-400 text-sm">No Image</div>
-                )}
-                <div className="absolute top-2 left-2">
-                    {getStatusBadge(status)}
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row h-full">
+        {/* Compact Thumbnail */}
+        <div className="sm:w-40 w-full shrink-0 relative bg-slate-100 min-h-[160px] sm:min-h-0">
+             {thumbnail ? (
+                 <img src={thumbnail} alt={title} className="w-full h-full object-cover absolute inset-0" />
+             ) : (
+                 <div className="w-full h-full flex items-center justify-center text-slate-400">
+                     <Package className="h-8 w-8 opacity-50" />
+                 </div>
+             )}
+        </div>
+
+        {/* Data Dense Content */}
+        <div className="p-4 flex-grow flex flex-col justify-between">
+            <div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
+                    <h3 className="font-bold text-slate-900 line-clamp-1 text-lg">{title}</h3>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold border ${config.color} whitespace-nowrap self-start sm:self-auto`}>
+                        <StatusIcon className="w-3 h-3 mr-1.5" />
+                        {config.label}
+                    </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-slate-600 mb-3">
+                    <div className="flex items-center">
+                        <Tag className="w-4 h-4 mr-2 text-slate-400" />
+                        <span className="truncate max-w-[120px]" title={typeof category === 'object' ? category.name : "Category"}>
+                            {typeof category === 'object' ? category.name : "Category"}
+                        </span>
+                    </div>
+                    <div className="flex items-center font-bold text-slate-900">
+                        <DollarSign className="w-4 h-4 mr-1 text-emerald-600" />
+                        {price.toLocaleString()}
+                    </div>
+                    <div className="flex items-center">
+                        <Weight className="w-4 h-4 mr-2 text-slate-400" />
+                        {estimatedWeight} kg
+                    </div>
+                     <div className="flex items-center text-xs text-slate-400">
+                        <Calendar className="w-4 h-4 mr-2 text-slate-400" />
+                        {new Date(createdAt).toLocaleDateString()}
+                    </div>
                 </div>
             </div>
             
-            <div className="p-4 flex flex-col justify-between flex-grow">
-                <div>
-                     <div className="flex justify-between items-start">
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">{title}</h3>
-                        <p className="text-lg font-bold text-blue-600">${price.toLocaleString()}</p>
-                     </div>
-                     <p className="text-sm text-gray-500 mb-2">
-                        Category: <span className="font-medium text-gray-700">{typeof category === 'object' ? category.name : "Other"}</span>
-                     </p>
-                     <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                        {listing.description || "No description provided."}
-                     </p>
-                </div>
-                
-                <div className="flex items-center justify-between text-sm text-gray-500 border-t border-gray-100 pt-4">
-                     <span className="flex items-center">
-                        <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
-                        {estimatedWeight} kg
-                     </span>
-                     <span>
-                        Created: {new Date(listing.createdAt || Date.now()).toLocaleDateString()}
-                     </span>
-                </div>
+            {/* Actions / ID */}
+            <div className="pt-3 border-t border-slate-50 flex justify-between items-center mt-auto">
+                 <span className="text-xs text-slate-400 font-mono tracking-wider">ID: {listing._id.slice(-6).toUpperCase()}</span>
+                 <Link href={`/dashboard/seller/edit/${listing._id}`} className="text-sm font-medium text-indigo-600 hover:text-indigo-800 hidden">
+                    Edit Details
+                 </Link>
             </div>
-       </div>
+        </div>
     </div>
   );
 }

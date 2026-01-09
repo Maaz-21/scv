@@ -3,6 +3,7 @@
 // Create scrap listing
 // View status
 const Listing = require("../../models/Listing");
+const Category = require("../../models/Category");
 const catchAsync = require("../../utils/catchAsync");
 const auditLogger = require("../../middleware/auditLogger");
 
@@ -21,7 +22,7 @@ exports.createListing = catchAsync(async (req, res) => {
     price,
     images: req.files.map(f => f.path),
     location,
-    status: "pending"
+    status: "submitted"
   });
 
   auditLogger(req.user.id, "CREATE_LISTING", "Listing", listing._id);
@@ -32,4 +33,12 @@ exports.createListing = catchAsync(async (req, res) => {
 exports.getMyListings = catchAsync(async (req, res) => {
   const listings = await Listing.find({ sellerId: req.user.id });
   res.json(listings);
+});
+
+exports.getCategories = catchAsync(async (req, res) => {
+  const categories = await Category.find({});
+  res.status(200).json({
+    success: true,
+    data: categories
+  });
 });

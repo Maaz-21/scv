@@ -1,59 +1,77 @@
+import { Package, Truck, CheckCircle, Clock, AlertTriangle } from "lucide-react";
+
 export default function OrderCard({ order }) {
-  const { _id, listing, amount, status, pickupDate, createdAt } = order;
+  const { _id, listingId, amount, status, pickupDate, createdAt } = order;
+  const listing = listingId;
   
   // formatting
   const formattedDate = new Date(createdAt).toLocaleDateString();
-  const formattedPickup = pickupDate ? new Date(pickupDate).toLocaleDateString() : 'Pending';
+  const formattedPickup = pickupDate ? new Date(pickupDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric'}) : 'Scheduling...';
   
-  // Status badge styling
-  const getStatusColor = (statusState) => {
+  // Determine Status Config
+  const getStatusConfig = (statusState) => {
     switch (statusState) {
-        case 'completed': return 'bg-green-100 text-green-800';
-        case 'pickup_scheduled': return 'bg-blue-100 text-blue-800';
-        case 'cancelled': return 'bg-red-100 text-red-800';
-        default: return 'bg-yellow-100 text-yellow-800'; // initiated/pending
+        case 'completed': 
+            return { color: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: CheckCircle, label: 'Completed' };
+        case 'picked':
+            return { color: 'bg-orange-100 text-orange-800 border-orange-200', icon: Truck, label: 'Picked Up' };
+        case 'pickup_scheduled': 
+            return { color: 'bg-indigo-100 text-indigo-800 border-indigo-200', icon: Truck, label: 'Pickup Scheduled' };
+        case 'confirmed':
+            return { color: 'bg-blue-100 text-blue-800 border-blue-200', icon: CheckCircle, label: 'Confirmed' };
+        case 'cancelled': 
+            return { color: 'bg-red-100 text-red-800 border-red-200', icon: AlertTriangle, label: 'Cancelled' };
+        case 'initiated':
+        default: 
+            return { color: 'bg-amber-100 text-amber-800 border-amber-200', icon: Clock, label: 'Processing' };
     }
   };
 
-  const humanStatus = (statusState) => {
-      switch (statusState) {
-          case 'pickup_scheduled': return 'Pickup Scheduled';
-          default: return statusState.charAt(0).toUpperCase() + statusState.slice(1);
-      }
-  };
+  const statusConfig = getStatusConfig(status);
+  const StatusIcon = statusConfig.icon;
+
+  // Image Helper
+  const thumbnail = listing?.images?.[0] || null;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-             <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center">
-                 <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                 </svg>
-             </div>
-             <div>
-                 <h4 className="text-sm font-bold text-gray-900">Order #{_id.slice(-6).toUpperCase()}</h4>
-                 <p className="text-xs text-gray-500">Placed on {formattedDate}</p>
-             </div>
+    <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden hover:shadow-lg transition-all duration-300 group">
+      {/* Header / Image Area */}
+      <div className="relative h-32 bg-slate-50 border-b border-slate-100 flex items-center justify-center overflow-hidden">
+          {thumbnail ? (
+               <img src={thumbnail} alt="Item" className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700" />
+          ) : (
+               <Package className="h-10 w-10 text-slate-300" />
+          )}
+          <div className="absolute top-3 right-3">
+               <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${statusConfig.color} shadow-sm backdrop-blur-sm`}>
+                   <StatusIcon className="w-3 h-3" />
+                   {statusConfig.label}
+               </span>
           </div>
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
-             {humanStatus(status)}
-          </span>
+      </div>
+
+      <div className="p-5">
+        <div className="mb-4">
+             <div className="flex justify-between items-start mb-1">
+                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Order #{_id.slice(-6).toUpperCase()}</p>
+                 <p className="text-xs text-slate-500">{formattedDate}</p>
+             </div>
+             <h3 className="text-lg font-bold text-slate-900 line-clamp-1">{listing ? listing.title : "Unknown Item"}</h3>
         </div>
         
-        <div className="border-t border-gray-100 pt-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">{listing ? listing.title : "Unknown Item"}</h3>
-            <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-500">Total Amount:</span>
-                <span className="font-bold text-gray-900">${amount.toLocaleString()}</span>
+        <div className="space-y-3 pt-4 border-t border-slate-50">
+             <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-500 font-medium">Total Paid</span>
+                <span className="font-bold text-slate-900 text-base">${amount.toLocaleString()}</span>
             </div>
-            {pickupDate && (
-                <div className="flex justify-between items-center text-sm mt-2">
-                    <span className="text-gray-500">Pickup Date:</span>
-                    <span className="font-medium text-gray-900">{formattedPickup}</span>
+            
+            <div className="flex justify-between items-center text-sm bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <div className="flex items-center gap-2 text-slate-600">
+                    <Truck className="w-4 h-4 text-indigo-500" />
+                    <span className="font-medium">Pickup</span>
                 </div>
-            )}
+                <span className="font-bold text-slate-800">{formattedPickup}</span>
+            </div>
         </div>
       </div>
     </div>

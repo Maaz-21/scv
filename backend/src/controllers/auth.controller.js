@@ -18,7 +18,8 @@ exports.register = async (req, res) => {
     role: role._id,
     passwordHash: await bcrypt.hash(password, 10),
     companyName,
-    phone
+    phone,
+    status: roleName === "seller" ? "pending" : "approved"
   });
 
   res.json({
@@ -35,7 +36,15 @@ exports.login = async (req, res) => {
 
   const match = await bcrypt.compare(password, user.passwordHash);
   if (!match) return res.status(401).json({ message: "Invalid credentials" });
-  console.log(user);
+  
+  // Safety check for role
+  if (!user.role || !user.role.name) {
+      console.error("User logged in but has no valid role assigned:", user._id);
+      return res.status(500).json({ message: "User account has configuration error (missing role). Contact admin." });
+  }
+
+  console.log(`Login: ${user.email}, Role: ${user.role.name}`);
+
   res.json({
     message: "Login successful",
     token: generateToken({ ...user.toObject(), roleName: user.role.name }),
@@ -43,7 +52,8 @@ exports.login = async (req, res) => {
     user: {
       id: user._id,
       name: user.name,
-      email: user.email
+      email: user.email,
+      status: user.status
     }
   });
 };

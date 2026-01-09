@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "approved", "blocked"],
+      enum: ["pending", "approved", "blocked", "rejected", "active"],
       default: "pending"
     }
   },
