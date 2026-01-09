@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { createListing, getMyListings } = require("../controllers/seller/seller.listing.controller");
+const { createListing, getMyListings, getCategories } = require("../controllers/seller/seller.listing.controller");
 const { auth } = require("../middleware/auth");
 const { hasRole } = require("../middleware/ValidateRole");
 const upload = require("../middleware/upload");
@@ -17,4 +17,11 @@ router.get(
   hasRole("seller"),
   getMyListings
 );
+
+router.get(
+  "/categories",
+  auth,
+  getCategories
+);
+
 module.exports = router;

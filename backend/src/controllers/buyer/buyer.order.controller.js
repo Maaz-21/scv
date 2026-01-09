@@ -4,12 +4,41 @@ const auditLogger = require("../../middleware/auditLogger");
 const catchAsync = require("../../utils/catchAsync");
 
 exports.browseListings = catchAsync(async (req, res) => {
-  const listings = await Listing.find({ status: "approved" });
+  const { preview } = req.query;
+
+  if (preview === "true") {
+    // Return only limited fields for homepage preview
+    const listings = await Listing.find({ status: { $in: ["live", "inspection_passed"] } })
+      .select("title category price images _id")
+      .limit(6);
+
+    return res.status(200).json({
+      success: true,
+      count: listings.length,
+      data: listings,
+    });
+  }
+
+  const listings = await Listing.find({ status: { $in: ["live", "inspection_passed"] } });
   
   res.status(200).json({
     success: true,
     count: listings.length,
     data: listings
+  });
+});
+
+exports.getListingDetails = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const listing = await Listing.findById(id).populate("sellerId", "name email");
+
+  if (!listing) {
+    return res.status(404).json({ success: false, message: "Listing not found" });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: listing
   });
 });
 
@@ -23,7 +52,8 @@ exports.placeOrder = catchAsync(async (req, res) => {
     return res.status(404).json({ success: false, message: "Listing not found" });
   }
 
-  if (listing.status !== "approved") {
+  // Allow 'live' or 'inspection_passed' listings to be bought
+  if (!["live", "inspection_passed"].includes(listing.status)) {
     return res.status(400).json({ success: false, message: "Listing is not available for purchase" });
   }
 

@@ -31,7 +31,7 @@ exports.approveListing = catchAsync(async (req, res) => {
     });
   }
 
-  listing.status = "approved";
+  listing.status = "admin_approved";
   listing.approvedBy = req.user._id;
   await listing.save();
 
@@ -138,6 +138,59 @@ exports.overrideDecision = catchAsync(async (req, res) => {
 
   res.json({
     message: "Listing decision overridden successfully",
+    listing
+  });
+});
+
+exports.getInspections = catchAsync(async (req, res) => {
+  const listings = await Listing.find({ status: "admin_approved" })
+    .populate("sellerId", "name email")
+    .populate("category", "name")
+    .sort({ updatedAt: -1 });
+
+  res.json(listings);
+});
+
+exports.processInspection = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { result, notes } = req.body;
+
+  if (!["passed", "failed"].includes(result)) {
+    return res.status(400).json({ message: "Result must be 'passed' or 'failed'" });
+  }
+
+  const listing = await Listing.findById(id);
+  if (!listing) {
+    return res.status(404).json({ message: "Listing not found" });
+  }
+
+  if (listing.status !== "admin_approved") {
+    return res.status(400).json({
+      message: `Cannot inspect listing with status: ${listing.status}`
+    });
+  }
+
+  const newStatus = result === "passed" ? "inspection_passed" : "inspection_failed";
+  listing.status = newStatus;
+  
+  // Optionally store notes in rejectionReason or a new field. 
+  // For now, if failed, we treat notes as rejection/failure reason
+  if (notes) {
+    listing.rejectionReason = notes; 
+  }
+
+  await listing.save();
+
+  await auditLogger(
+    req.user._id,
+    "INSPECTION_RESULT",
+    "Listing",
+    listing._id,
+    `Inspection ${result}. Notes: ${notes}`
+  );
+
+  res.json({
+    message: `Inspection ${result}`,
     listing
   });
 });

@@ -3,6 +3,7 @@
 // Create scrap listing
 // View status
 const Listing = require("../../models/Listing");
+const Category = require("../../models/Category");
 const catchAsync = require("../../utils/catchAsync");
 const auditLogger = require("../../middleware/auditLogger");
 
@@ -32,4 +33,9 @@ exports.createListing = catchAsync(async (req, res) => {
 exports.getMyListings = catchAsync(async (req, res) => {
   const listings = await Listing.find({ sellerId: req.user.id });
   res.json(listings);
+});
+
+exports.getCategories = catchAsync(async (req, res) => {
+  const categories = await Category.find({});
+  res.json(categories);
 });

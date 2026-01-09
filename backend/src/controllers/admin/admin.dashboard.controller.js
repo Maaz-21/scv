@@ -1,25 +1,25 @@
 const Listing = require("../../models/Listing");
 const Order = require("../../models/Order");
 const User = require("../../models/User");
+const Role = require("../../models/Role");
 const catchAsync = require("../../utils/catchAsync");
 
 /**
  * Get statistics summary for admin dashboard
  */
 exports.getStatsSummary = catchAsync(async (req, res) => {
-  const totalUsers = await User.countDocuments();
-  const totalListings = await Listing.countDocuments();
-  const pendingListings = await Listing.countDocuments({ status: "pending" });
-  const approvedListings = await Listing.countDocuments({ status: "approved" });
+  const sellerRole = await Role.findOne({ name: "seller" });
+  const totalSellers = sellerRole ? await User.countDocuments({ role: sellerRole._id }) : 0;
+  
+  // Count 'submitted' as pending listings for admin review (since seeds use 'submitted')
+  const pendingListings = await Listing.countDocuments({ status: "submitted" });
+  const liveItems = await Listing.countDocuments({ status: { $in: ["live", "inspection_passed"] } });
   const totalOrders = await Order.countDocuments();
-  const completedOrders = await Order.countDocuments({ status: "completed" });
 
   res.json({
-    totalUsers,
-    totalListings,
+    totalSellers,
     pendingListings,
-    approvedListings,
-    totalOrders,
-    completedOrders
+    liveItems,
+    totalOrders
   });
 });
