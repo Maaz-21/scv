@@ -1,19 +1,19 @@
-//Handles file uploads (Cloudinary / multer).
+//Handles file uploads using Cloudinary
 const multer = require("multer");
-const path = require("path");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinary");
 
-// storage location + file naming
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/"); // auto-creates folder if missing
-  },
-  filename: function (req, file, cb) {
-    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, unique + path.extname(file.originalname));
-  },
+// Configure Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "scavenger-hunt/listings",
+    allowed_formats: ["jpg", "jpeg", "png"],
+    transformation: [{ width: 1000, height: 1000, crop: "limit" }]
+  }
 });
 
-// filter allowed files
+// Filter allowed files
 function fileFilter(req, file, cb) {
   const allowed = ["image/jpeg", "image/jpg", "image/png"];
 
