@@ -43,17 +43,73 @@ export default function BuyerItemDetailsPage({ params }) {
   };
 
   const handleBuy = async () => {
-      if (!confirm("Are you sure you want to purchase this item?")) return;
-      
       setBuying(true);
       setError(null);
-      
+
       try {
-          await apiPost(`/buyer/order/${id}`, {});
-          router.push("/dashboard/buyer/orders");
+          // Step 1: Create Razorpay order
+          const orderResponse = await apiPost('/payment/create-order', {
+              listingId: id
+          });
+
+          if (!orderResponse.success) {
+              throw new Error(orderResponse.message || 'Failed to create order');
+          }
+
+          const { orderId, amount, currency, keyId, listing } = orderResponse.data;
+
+          // Step 2: Initialize Razorpay payment
+          const options = {
+              key: keyId,
+              amount: amount,
+              currency: currency,
+              name: "Scavenger Hunt",
+              description: listing.title,
+              image: listing.image || "/logo.png",
+              order_id: orderId,
+              handler: async function (response) {
+                  // Step 3: Verify payment on backend
+                  try {
+                      const verifyResponse = await apiPost('/payment/verify', {
+                          razorpay_order_id: response.razorpay_order_id,
+                          razorpay_payment_id: response.razorpay_payment_id,
+                          razorpay_signature: response.razorpay_signature,
+                          listingId: id
+                      });
+
+                      if (verifyResponse.success) {
+                          alert('Payment successful! Order placed.');
+                          router.push('/dashboard/buyer/orders');
+                      } else {
+                          throw new Error('Payment verification failed');
+                      }
+                  } catch (verifyErr) {
+                      console.error('Verification failed:', verifyErr);
+                      setError('Payment verification failed. Please contact support.');
+                      setBuying(false);
+                  }
+              },
+              prefill: {
+                  name: "",
+                  email: "",
+                  contact: ""
+              },
+              theme: {
+                  color: "#4F46E5"
+              },
+              modal: {
+                  ondismiss: function() {
+                      setBuying(false);
+                  }
+              }
+          };
+
+          const razorpayInstance = new window.Razorpay(options);
+          razorpayInstance.open();
+
       } catch (err) {
           console.error("Purchase failed:", err);
-          setError(err.message || "Failed to place order. Please try again.");
+          setError(err.message || "Failed to initiate payment. Please try again.");
           setBuying(false);
       }
   };
