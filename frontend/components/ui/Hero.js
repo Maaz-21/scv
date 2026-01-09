@@ -1,46 +1,74 @@
 import Link from "next/link";
+import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 
 export default function Hero() {
   return (
-    <div className="relative bg-white overflow-hidden">
-      <div className="max-w-7xl mx-auto">
-        <div className="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
-          <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
-            <div className="sm:text-center lg:text-left">
-              <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                <span className="block xl:inline">Turn your scrap into</span>{" "}
-                <span className="block text-blue-600 xl:inline">cash or treasure</span>
+    <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-indigo-50/20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 lg:pt-32 lg:pb-40">
+        <div className="lg:grid lg:grid-cols-12 lg:gap-16 items-center">
+            
+            {/* Left Content */}
+            <div className="lg:col-span-6 text-center lg:text-left z-10">
+              <h1 className="text-5xl tracking-tight font-extrabold text-slate-900 sm:text-6xl md:text-7xl mb-8 leading-tight">
+                Turn Scrap Into <br className="hidden lg:block"/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Value</span>
               </h1>
-              <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                Scavenger Hunt is the premier marketplace for buying and selling verified scrap materials. 
-                Sellers get fair value, and buyers get quality-checked goods.
+              <p className="mt-4 text-xl text-slate-600 font-light leading-relaxed mb-10 max-w-2xl mx-auto lg:mx-0">
+                Scavenger Hunt is the premier marketplace for verified scrap materials. 
+                Sellers get fair value, and buyers get quality-checked goods through our trusted platform.
               </p>
-              <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-                <div className="rounded-md shadow">
-                  <Link
-                    href="/register-seller"
-                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10"
-                  >
-                    Register as Seller
-                  </Link>
-                </div>
-                <div className="mt-3 sm:mt-0 sm:ml-3">
-                  <Link
-                    href="/register"
-                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 md:py-4 md:text-lg md:px-10"
-                  >
-                    Register as Buyer
-                  </Link>
-                </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Link
+                  href="/register-seller"
+                  className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-medium rounded-2xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all duration-300 hover:-translate-y-1"
+                >
+                  Register as Seller
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center justify-center px-8 py-4 border border-indigo-100 text-lg font-medium rounded-2xl text-indigo-700 bg-white hover:bg-indigo-50 shadow-sm hover:shadow-md transition-all duration-300"
+                >
+                  Register as Buyer
+                </Link>
+              </div>
+              
+              <div className="mt-10 flex items-center justify-center lg:justify-start gap-8 text-sm text-slate-500">
+                  <div className="flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 mr-2"></div>
+                      Verified Listings
+                  </div>
+                   <div className="flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-indigo-500 mr-2"></div>
+                      Secure Payments
+                  </div>
               </div>
             </div>
-          </main>
+
+            {/* Right Image/Graphic */}
+            <div className="lg:col-span-6 mt-16 lg:mt-0 relative">
+               <div className="relative rounded-3xl shadow-2xl bg-white p-4 rotate-2 hover:rotate-0 transition-transform duration-500">
+                   <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 relative group">
+                        <Image 
+                           src="/hero.webp" 
+                           alt="Recycling scrap metal into value" 
+                           fill
+                           className="object-cover hover:scale-105 transition-transform duration-700"
+                           priority
+                        />
+                   </div>
+               </div>
+               
+               {/* Background Blurs */}
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full -z-10">
+                   <div className="absolute top-0 right-0 w-72 h-72 bg-indigo-300/30 rounded-full blur-[100px]"></div>
+                   <div className="absolute bottom-0 left-0 w-72 h-72 bg-emerald-300/20 rounded-full blur-[80px]"></div>
+               </div>
+            </div>
+            
         </div>
-      </div>
-      {/* Decorative image placeholder */}
-      <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2 bg-gray-100 flex items-center justify-center">
-         <div className="text-gray-400 font-bold text-xl">[Hero Image Placeholder]</div>
-         {/* In a real app, use <Image /> here */}
       </div>
     </div>
   );

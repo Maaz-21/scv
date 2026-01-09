@@ -5,6 +5,7 @@ import AdminLayout from "@/components/layouts/AdminLayout";
 import ProtectedLayout from "@/components/layouts/ProtectedLayout";
 import { apiGet, apiPost } from "@/services/apiClient";
 import AdminListingCard from "@/components/cards/AdminListingCard";
+import { Package, Inbox } from "lucide-react";
 
 export default function AdminListingsPage() {
   const [listings, setListings] = useState([]);
@@ -51,7 +52,7 @@ export default function AdminListingsPage() {
 
     setActionLoading(true);
     try {
-      await apiPost(`/admin/listings/${id}/reject`, { rejectionReason: reason });
+      await apiPost(`/admin/listings/${id}/reject`, { reason });
       setListings((prev) => prev.filter((l) => l._id !== id));
     } catch (err) {
       console.error("Reject failed", err);
@@ -66,31 +67,40 @@ export default function AdminListingsPage() {
       <AdminLayout>
         <div className="py-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <h1 className="text-2xl font-semibold text-gray-900">Pending Listings Review</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Listing Review</h1>
+            <p className="mt-2 text-sm text-gray-600">Review and approve listings before they are sent for inspection.</p>
           </div>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-6">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-8">
             {loading ? (
-               <div className="flex justify-center p-10">
-                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-900"></div>
+               <div className="grid grid-cols-1 gap-6">
+                   {[1,2,3].map(i => <div key={i} className="h-64 bg-gray-200 rounded-xl animate-pulse"></div>)}
                </div>
             ) : error ? (
-              <div className="text-red-500">{error}</div>
+              <div className="bg-red-50 border-l-4 border-red-400 p-4">
+                  <div className="flex">
+                      <div className="ml-3">
+                          <p className="text-sm text-red-700">{error}</p>
+                      </div>
+                  </div>
+              </div>
             ) : listings.length === 0 ? (
-              <div className="text-center py-10 bg-white shadow rounded-lg">
-                  <p className="text-gray-500 text-lg">No pending listings to review.</p>
+              <div className="text-center py-16 bg-white shadow-sm rounded-xl border border-dashed border-gray-300">
+                  <Inbox className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No pending listings</h3>
+                  <p className="mt-1 text-sm text-gray-500">Good job! You're all caught up.</p>
               </div>
             ) : (
-              <div className="space-y-6">
-                {listings.map((listing) => (
-                  <AdminListingCard
-                    key={listing._id}
-                    listing={listing}
-                    onApprove={handleApprove}
-                    onReject={handleReject}
-                    actionLoading={actionLoading}
-                  />
-                ))}
-              </div>
+               <div className="grid grid-cols-1 gap-6">
+                 {listings.map((listing) => (
+                   <AdminListingCard
+                     key={listing._id}
+                     listing={listing}
+                     onApprove={handleApprove}
+                     onReject={handleReject}
+                     actionLoading={actionLoading}
+                   />
+                 ))}
+               </div>
             )}
           </div>
         </div>

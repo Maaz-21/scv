@@ -5,7 +5,7 @@ const catchAsync = require("../../utils/catchAsync");
 
 // Get all pending listings
 exports.getPendingListings = catchAsync(async (req, res) => {
-  const pendingListings = await Listing.find({ status: "pending" })
+  const pendingListings = await Listing.find({ status: "submitted" })
     .populate("sellerId", "name email")
     .populate("category", "name")
     .sort({ createdAt: -1 });
@@ -25,7 +25,7 @@ exports.approveListing = catchAsync(async (req, res) => {
     return res.status(404).json({ message: "Listing not found" });
   }
 
-  if (listing.status !== "pending") {
+  if (listing.status !== "submitted") {
     return res.status(400).json({
       message: `Cannot approve listing with status: ${listing.status}`
     });
@@ -63,7 +63,7 @@ exports.rejectListing = catchAsync(async (req, res) => {
     return res.status(404).json({ message: "Listing not found" });
   }
 
-  if (listing.status !== "pending") {
+  if (listing.status !== "submitted") {
     return res.status(400).json({
       message: `Cannot reject listing with status: ${listing.status}`
     });

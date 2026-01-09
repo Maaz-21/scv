@@ -127,19 +127,6 @@ export default function LoginForm() {
           </button>
         </div>
       </form>
-      
-       <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-                New to Scavenger Hunt?{' '}
-                <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-                    Register as Buyer
-                </Link>
-                {' or '}
-                <Link href="/register-seller" className="font-medium text-blue-600 hover:text-blue-500">
-                    Register as Seller
-                </Link>
-            </p>
-        </div>
     </div>
   );
 }

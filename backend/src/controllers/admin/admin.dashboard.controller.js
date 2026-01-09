@@ -9,17 +9,59 @@ const catchAsync = require("../../utils/catchAsync");
  */
 exports.getStatsSummary = catchAsync(async (req, res) => {
   const sellerRole = await Role.findOne({ name: "seller" });
-  const totalSellers = sellerRole ? await User.countDocuments({ role: sellerRole._id }) : 0;
-  
-  // Count 'submitted' as pending listings for admin review (since seeds use 'submitted')
-  const pendingListings = await Listing.countDocuments({ status: "submitted" });
-  const liveItems = await Listing.countDocuments({ status: { $in: ["live", "inspection_passed"] } });
-  const totalOrders = await Order.countDocuments();
+  if (!sellerRole) {
+    return res.status(500).json({ message: "Seller role not found" });
+  }
+
+  // Execute all queries in parallel for efficiency
+  const [
+    totalSellers,
+    pendingSellers,
+    pendingListings,
+    liveListings,
+    activeOrders,
+    recentOrders,
+    recentListings,
+    recentSellers
+  ] = await Promise.all([
+    User.countDocuments({ role: sellerRole._id }),
+    User.countDocuments({ role: sellerRole._id, status: "pending" }),
+    Listing.countDocuments({ status: "submitted" }),
+    Listing.countDocuments({ status: { $in: ["live", "inspection_passed"] } }),
+    Order.countDocuments({ status: { $in: ["initiated", "confirmed", "pickup_scheduled"] } }),
+    
+    // Recent Orders
+    Order.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("buyerId", "name email")
+      .populate("listingId", "title price"),
+
+    // Recent Listings
+    Listing.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("sellerId", "name companyName"),
+
+    // Recent Sellers
+    User.find({ role: sellerRole._id })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select("name email companyName status createdAt")
+  ]);
 
   res.json({
-    totalSellers,
-    pendingListings,
-    liveItems,
-    totalOrders
+    stats: {
+      totalSellers,
+      pendingSellers,
+      pendingListings,
+      liveListings,
+      activeOrders
+    },
+    recent: {
+      orders: recentOrders,
+      listings: recentListings,
+      sellers: recentSellers
+    }
   });
 });

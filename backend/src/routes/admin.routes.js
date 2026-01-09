@@ -16,7 +16,18 @@ const {
   getStatsSummary
 } = require("../controllers/admin/admin.dashboard.controller");
 
+const {
+  getPendingSellers,
+  approveSeller,
+  rejectSeller
+} = require("../controllers/admin/admin.users.controller");
+
 router.get("/dashboard", auth, hasRole("admin"), getStatsSummary);
+
+// Sellers management
+router.get("/sellers/pending", auth, hasRole("admin"), getPendingSellers);
+router.post("/seller/:id/approve", auth, hasRole("admin"), approveSeller);
+router.post("/seller/:id/reject", auth, hasRole("admin"), rejectSeller);
 
 router.get("/listings/pending", auth, hasRole("admin"), getPendingListings);
 

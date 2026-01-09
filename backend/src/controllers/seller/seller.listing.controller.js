@@ -22,7 +22,7 @@ exports.createListing = catchAsync(async (req, res) => {
     price,
     images: req.files.map(f => f.path),
     location,
-    status: "pending"
+    status: "submitted"
   });
 
   auditLogger(req.user.id, "CREATE_LISTING", "Listing", listing._id);
@@ -37,5 +37,8 @@ exports.getMyListings = catchAsync(async (req, res) => {
 
 exports.getCategories = catchAsync(async (req, res) => {
   const categories = await Category.find({});
-  res.json(categories);
+  res.status(200).json({
+    success: true,
+    data: categories
+  });
 });
