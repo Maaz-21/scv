@@ -39,7 +39,7 @@ export default function ListingCard({ listing }) {
            <div className="absolute top-3 left-3">
                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-white/90 backdrop-blur-md text-slate-700 shadow-sm">
                    <Tag className="w-3 h-3 text-indigo-500" />
-                   {typeof category === 'object' ? category.name : "Scrap"}
+                   {(category && typeof category === 'object') ? category.name : "Scrap"}
                </span>
            </div>
 

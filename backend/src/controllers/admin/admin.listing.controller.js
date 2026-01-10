@@ -32,11 +32,11 @@ exports.approveListing = catchAsync(async (req, res) => {
   }
 
   listing.status = "admin_approved";
-  listing.approvedBy = req.user._id;
+  listing.approvedBy = req.user.id;
   await listing.save();
 
   await auditLogger(
-    req.user._id,
+    req.user.id,
     "APPROVE_LISTING",
     "Listing",
     listing._id,
@@ -74,7 +74,7 @@ exports.rejectListing = catchAsync(async (req, res) => {
   await listing.save();
 
   await auditLogger(
-    req.user._id,
+    req.user.id,
     "REJECT_LISTING",
     "Listing",
     listing._id,
@@ -113,7 +113,7 @@ exports.overrideDecision = catchAsync(async (req, res) => {
 
   if (action === "approve") {
     listing.status = "approved";
-    listing.approvedBy = req.user._id;
+    listing.approvedBy = req.user.id;
     listing.rejectionReason = undefined;
   } else {
     if (!rejectionReason) {
@@ -129,7 +129,7 @@ exports.overrideDecision = catchAsync(async (req, res) => {
   await listing.save();
 
   await auditLogger(
-    req.user._id,
+    req.user.id,
     "OVERRIDE_LISTING_DECISION",
     "Listing",
     listing._id,
@@ -182,7 +182,7 @@ exports.processInspection = catchAsync(async (req, res) => {
   await listing.save();
 
   await auditLogger(
-    req.user._id,
+    req.user.id,
     "INSPECTION_RESULT",
     "Listing",
     listing._id,

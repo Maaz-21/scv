@@ -2,6 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
+import Script from "next/script";
 import { apiGet, apiPost } from "@/services/apiClient";
 import BuyerLayout from "@/components/layouts/BuyerLayout";
 import ProtectedLayout from "@/components/layouts/ProtectedLayout";
@@ -44,13 +45,67 @@ export default function BuyerItemDetailsPage({ params }) {
 
   const handleBuy = async () => {
       if (!confirm("Are you sure you want to purchase this item?")) return;
+
+      if (!window.Razorpay) {
+          setError("Payment SDK not loaded. Please refresh.");
+          return;
+      }
       
       setBuying(true);
       setError(null);
       
       try {
-          await apiPost(`/buyer/order/${id}`, {});
-          router.push("/dashboard/buyer/orders");
+          const orderResponse = await apiPost("/buyer/payments/create-order", { listingId: id });
+          
+          if (!orderResponse.success) {
+             throw new Error(orderResponse.message || "Failed to create order");
+          }
+
+          const { order, razorpayOrder } = orderResponse;
+
+          const options = {
+              key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
+              amount: razorpayOrder.amount,
+              currency: razorpayOrder.currency,
+              name: "Scavenger Hunt",
+              description: `Purchase for ${item.title}`,
+              order_id: razorpayOrder.id,
+              handler: async function (response) {
+                  try {
+                      const verifyResponse = await apiPost("/buyer/payments/verify", {
+                          razorpay_order_id: response.razorpay_order_id,
+                          razorpay_payment_id: response.razorpay_payment_id,
+                          razorpay_signature: response.razorpay_signature,
+                          orderId: order._id
+                      });
+
+                      if (verifyResponse.success) {
+                          router.push("/dashboard/buyer/orders");
+                      } else {
+                          setError("Payment Verification Failed");
+                          setBuying(false);
+                      }
+                  } catch (verifyError) {
+                      console.error("Verification error", verifyError);
+                      setError("Payment Verification Failed");
+                      setBuying(false);
+                  }
+              },
+              prefill: {
+                  // email: user?.email, // Add user email if available
+              },
+              theme: {
+                  color: "#4f46e5"
+              }
+          };
+
+          const rzp = new window.Razorpay(options);
+          rzp.on('payment.failed', function (response){
+               setError("Payment Failed: " + response.error.description);
+               setBuying(false);
+          });
+          rzp.open();
+
       } catch (err) {
           console.error("Purchase failed:", err);
           setError(err.message || "Failed to place order. Please try again.");
@@ -94,6 +149,7 @@ export default function BuyerItemDetailsPage({ params }) {
   return (
     <ProtectedLayout allowedRoles={["buyer"]}>
       <BuyerLayout>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
         <div className="mb-6">
             <Link href="/dashboard/buyer" className="inline-flex items-center text-slate-500 hover:text-indigo-600 transition-colors">
                 <ArrowLeft className="h-4 w-4 mr-2" />

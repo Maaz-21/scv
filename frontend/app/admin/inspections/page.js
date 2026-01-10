@@ -114,7 +114,7 @@ export default function InspectionsPage() {
                               />
                               <div className="flex gap-3">
                                 <button
-                                  onClick={() => handleInspection(listing._id, "fail")}
+                                  onClick={() => handleInspection(listing._id, "failed")}
                                   disabled={actionLoading}
                                   className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 transition-colors"
                                 >
@@ -122,7 +122,7 @@ export default function InspectionsPage() {
                                   Fail
                                 </button>
                                 <button
-                                  onClick={() => handleInspection(listing._id, "pass")}
+                                  onClick={() => handleInspection(listing._id, "passed")}
                                   disabled={actionLoading}
                                   className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 transition-colors"
                                 >

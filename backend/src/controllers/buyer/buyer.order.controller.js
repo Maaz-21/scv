@@ -1,5 +1,6 @@
 const Order = require("../../models/Order");
 const Listing = require("../../models/Listing");
+const Category = require("../../models/Category");
 const auditLogger = require("../../middleware/auditLogger");
 const catchAsync = require("../../utils/catchAsync");
 
@@ -9,7 +10,9 @@ exports.browseListings = catchAsync(async (req, res) => {
   if (preview === "true") {
     // Return only limited fields for homepage preview
     const listings = await Listing.find({ status: { $in: ["live", "inspection_passed"] } })
-      .select("title category price images _id")
+      .select("title category price images _id createdAt")
+      .populate("category", "name")
+      .sort({ createdAt: -1 })
       .limit(6);
 
     return res.status(200).json({
@@ -19,7 +22,9 @@ exports.browseListings = catchAsync(async (req, res) => {
     });
   }
 
-  const listings = await Listing.find({ status: { $in: ["live", "inspection_passed"] } });
+  const listings = await Listing.find({ status: { $in: ["live", "inspection_passed"] } })
+    .populate("category", "name")
+    .sort({ createdAt: -1 });
   
   res.status(200).json({
     success: true,
@@ -30,7 +35,9 @@ exports.browseListings = catchAsync(async (req, res) => {
 
 exports.getListingDetails = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const listing = await Listing.findById(id).populate("sellerId", "name email");
+  const listing = await Listing.findById(id)
+    .populate("sellerId", "name email")
+    .populate("category", "name");
 
   if (!listing) {
     return res.status(404).json({ success: false, message: "Listing not found" });
@@ -68,8 +75,8 @@ exports.placeOrder = catchAsync(async (req, res) => {
     status: "initiated"
   });
 
-  listing.status = "sold";
-  await listing.save();
+  // REMOVED: listing.status = "sold";
+  // await listing.save();
 
   await auditLogger(buyerId, "ORDER_CREATED", "Order", order._id, `Order created for listing ${listing.title}`);
 
@@ -86,5 +93,13 @@ exports.myOrders = catchAsync(async (req, res) => {
     success: true,
     count: orders.length,
     data: orders
+  });
+});
+
+exports.getCategories = catchAsync(async (req, res) => {
+  const categories = await Category.find({});
+  res.status(200).json({
+    success: true,
+    data: categories
   });
 }); 
