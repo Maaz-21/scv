@@ -50,7 +50,7 @@ exports.updateOrderStatus = catchAsync(async (req, res) => {
   await order.save();
 
   await auditLogger(
-    req.user._id,
+    req.user.id,
     "UPDATE_ORDER_STATUS",
     "Order",
     order._id,

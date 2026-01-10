@@ -13,11 +13,25 @@ export default function BuyerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [categories, setCategories] = useState(["All"]);
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
     fetchMarketplace();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await apiGet("/buyer/categories");
+      if (response && response.success) {
+        const categoryNames = response.data.map(cat => cat.name);
+        setCategories(["All", ...categoryNames]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch categories:", err);
+    }
+  };
 
   const fetchMarketplace = async () => {
     try {
@@ -39,19 +53,20 @@ export default function BuyerDashboard() {
   };
 
   // --- Filtering Logic (Client Side for MVP) ---
-  const categories = ["All", "Metals", "E-Waste", "Auto Parts", "Construction", "Misc"];
   
   const filteredListings = listings.filter(item => {
        const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase());
-       // Mock category check. In real app, check item.category._id or item.category.name
-       const itemCatName = typeof item.category === 'object' ? item.category.name : "Misc"; 
-       const matchesCategory = selectedCategory === "All" || itemCatName.includes(selectedCategory) || (selectedCategory === "Misc" && !["Metals", "E-Waste", "Auto Parts", "Construction"].some(c => itemCatName.includes(c)));
+       
+       const itemCatName = (item.category && typeof item.category === 'object') ? item.category.name : "Misc"; 
+       
+       const matchesCategory = selectedCategory === "All" || itemCatName === selectedCategory;
+
        return matchesSearch && matchesCategory;
   });
 
   // Split into simulated "sections" for rich UI feel
   const newArrivals = filteredListings.slice(0, 4);
-  const popularMetal = filteredListings.filter(i => (typeof i.category === 'object' ? i.category.name : "").includes("Metal")).slice(0, 3);
+  const popularMetal = filteredListings.filter(i => ((i.category && typeof i.category === 'object') ? i.category.name : "").includes("Metal")).slice(0, 3);
   const remainingItems = filteredListings.slice(4); 
 
   return (
@@ -144,7 +159,7 @@ export default function BuyerDashboard() {
                 {remainingItems.length > 0 && (
                     <section>
                          <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-bold text-slate-900">More Opportunities</h2>
+                            <h2 className="text-xl font-bold text-slate-900">Discover More</h2>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             {remainingItems.map(listing => (

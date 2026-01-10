@@ -2,6 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
+import Script from "next/script";
 import { apiGet, apiPost } from "@/services/apiClient";
 import BuyerLayout from "@/components/layouts/BuyerLayout";
 import ProtectedLayout from "@/components/layouts/ProtectedLayout";
@@ -43,69 +44,67 @@ export default function BuyerItemDetailsPage({ params }) {
   };
 
   const handleBuy = async () => {
+      if (!confirm("Are you sure you want to purchase this item?")) return;
+
+      if (!window.Razorpay) {
+          setError("Payment SDK not loaded. Please refresh.");
+          return;
+      }
+      
       setBuying(true);
       setError(null);
 
       try {
-          // Step 1: Create Razorpay order
-          const orderResponse = await apiPost('/payment/create-order', {
-              listingId: id
-          });
-
+          const orderResponse = await apiPost("/buyer/payments/create-order", { listingId: id });
+          
           if (!orderResponse.success) {
-              throw new Error(orderResponse.message || 'Failed to create order');
+             throw new Error(orderResponse.message || "Failed to create order");
           }
 
-          const { orderId, amount, currency, keyId, listing } = orderResponse.data;
+          const { order, razorpayOrder } = orderResponse;
 
-          // Step 2: Initialize Razorpay payment
           const options = {
-              key: keyId,
-              amount: amount,
-              currency: currency,
+              key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
+              amount: razorpayOrder.amount,
+              currency: razorpayOrder.currency,
               name: "Scavenger Hunt",
-              description: listing.title,
-              image: listing.image || "/logo.png",
-              order_id: orderId,
+              description: `Purchase for ${item.title}`,
+              order_id: razorpayOrder.id,
               handler: async function (response) {
-                  // Step 3: Verify payment on backend
                   try {
-                      const verifyResponse = await apiPost('/payment/verify', {
+                      const verifyResponse = await apiPost("/buyer/payments/verify", {
                           razorpay_order_id: response.razorpay_order_id,
                           razorpay_payment_id: response.razorpay_payment_id,
                           razorpay_signature: response.razorpay_signature,
-                          listingId: id
+                          orderId: order._id
                       });
 
                       if (verifyResponse.success) {
-                          alert('Payment successful! Order placed.');
-                          router.push('/dashboard/buyer/orders');
+                          router.push("/dashboard/buyer/orders");
                       } else {
-                          throw new Error('Payment verification failed');
+                          setError("Payment Verification Failed");
+                          setBuying(false);
                       }
-                  } catch (verifyErr) {
-                      console.error('Verification failed:', verifyErr);
-                      setError('Payment verification failed. Please contact support.');
+                  } catch (verifyError) {
+                      console.error("Verification error", verifyError);
+                      setError("Payment Verification Failed");
                       setBuying(false);
                   }
               },
               prefill: {
-                  name: "",
-                  email: "",
-                  contact: ""
+                  // email: user?.email, // Add user email if available
               },
               theme: {
-                  color: "#4F46E5"
-              },
-              modal: {
-                  ondismiss: function() {
-                      setBuying(false);
-                  }
+                  color: "#4f46e5"
               }
           };
 
-          const razorpayInstance = new window.Razorpay(options);
-          razorpayInstance.open();
+          const rzp = new window.Razorpay(options);
+          rzp.on('payment.failed', function (response){
+               setError("Payment Failed: " + response.error.description);
+               setBuying(false);
+          });
+          rzp.open();
 
       } catch (err) {
           console.error("Purchase failed:", err);
@@ -150,6 +149,7 @@ export default function BuyerItemDetailsPage({ params }) {
   return (
     <ProtectedLayout allowedRoles={["buyer"]}>
       <BuyerLayout>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
         <div className="mb-6">
             <Link href="/dashboard/buyer" className="inline-flex items-center text-slate-500 hover:text-indigo-600 transition-colors">
                 <ArrowLeft className="h-4 w-4 mr-2" />
