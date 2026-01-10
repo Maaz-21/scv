@@ -53,7 +53,7 @@ export default function BuyerItemDetailsPage({ params }) {
       
       setBuying(true);
       setError(null);
-      
+
       try {
           const orderResponse = await apiPost("/buyer/payments/create-order", { listingId: id });
           
@@ -108,7 +108,7 @@ export default function BuyerItemDetailsPage({ params }) {
 
       } catch (err) {
           console.error("Purchase failed:", err);
-          setError(err.message || "Failed to place order. Please try again.");
+          setError(err.message || "Failed to initiate payment. Please try again.");
           setBuying(false);
       }
   };

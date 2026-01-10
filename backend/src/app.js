@@ -6,6 +6,8 @@ const sellerRoutes = require("./routes/seller.routes");
 const adminRoutes = require("./routes/admin.routes");
 const buyerRoutes = require("./routes/buyer.routes");
 const pickupRoutes = require("./routes/pickup.routes");
+const uploadRoutes = require("./routes/upload.routes");
+const paymentRoutes = require("./routes/payment.routes");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -22,6 +24,8 @@ app.use("/api/seller", sellerRoutes);
 app.use("/api/buyer", buyerRoutes);
 app.use("/api/pickup", pickupRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/upload", uploadRoutes);
+app.use("/api/payment", paymentRoutes);
 
 app.use(errorHandler);
 

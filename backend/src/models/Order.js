@@ -31,6 +31,15 @@ const orderSchema = new mongoose.Schema(
       type: String,
       enum: ["pending", "paid", "failed", "refunded"],
       default: "pending"
+    },
+    paymentId: {
+      type: String
+    },
+    paymentOrderId: {
+      type: String
+    },
+    paymentSignature: {
+      type: String
     }
   },
   { timestamps: true }
