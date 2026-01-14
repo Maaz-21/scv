@@ -6,12 +6,17 @@ import ProtectedLayout from "@/components/layouts/ProtectedLayout";
 import { apiGet, apiPost } from "@/services/apiClient";
 import AdminListingCard from "@/components/cards/AdminListingCard";
 import { Package, Inbox } from "lucide-react";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import toast from "react-hot-toast";
 
 export default function AdminListingsPage() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const [approveModalOpen, setApproveModalOpen] = useState(false);
+  const [selectedListingId, setSelectedListingId] = useState(null);
 
   useEffect(() => {
     fetchPendingListings();
@@ -31,16 +36,23 @@ export default function AdminListingsPage() {
     }
   };
 
-  const handleApprove = async (id) => {
-    if (!confirm("Are you sure you want to approve this listing for inspection?")) return;
+  const openApproveModal = (id) => {
+    setSelectedListingId(id);
+    setApproveModalOpen(true);
+  };
+
+  const handleApprove = async () => {
+    setApproveModalOpen(false);
+    if (!selectedListingId) return;
     
     setActionLoading(true);
     try {
-      await apiPost(`/admin/listings/${id}/approve`, {});
-      setListings((prev) => prev.filter((l) => l._id !== id));
+      await apiPost(`/admin/listings/${selectedListingId}/approve`, {});
+      setListings((prev) => prev.filter((l) => l._id !== selectedListingId));
+      toast.success("Listing approved for inspection");
     } catch (err) {
       console.error("Approve failed", err);
-      alert("Failed to approve listing");
+      toast.error("Failed to approve listing");
     } finally {
       setActionLoading(false);
     }
@@ -54,9 +66,10 @@ export default function AdminListingsPage() {
     try {
       await apiPost(`/admin/listings/${id}/reject`, { reason });
       setListings((prev) => prev.filter((l) => l._id !== id));
+      toast.success("Listing rejected");
     } catch (err) {
       console.error("Reject failed", err);
-      alert("Failed to reject listing");
+      toast.error("Failed to reject listing");
     } finally {
       setActionLoading(false);
     }
@@ -95,7 +108,7 @@ export default function AdminListingsPage() {
                    <AdminListingCard
                      key={listing._id}
                      listing={listing}
-                     onApprove={handleApprove}
+                     onApprove={openApproveModal}
                      onReject={handleReject}
                      actionLoading={actionLoading}
                    />
@@ -104,6 +117,15 @@ export default function AdminListingsPage() {
             )}
           </div>
         </div>
+        <ConfirmationModal
+          isOpen={approveModalOpen}
+          onClose={() => setApproveModalOpen(false)}
+          onConfirm={handleApprove}
+          title="Approve Listing"
+          message="Are you sure you want to approve this listing for inspection?"
+          confirmText="Approve"
+          cancelText="Cancel"
+        />
       </AdminLayout>
     </ProtectedLayout>
   );

@@ -1,6 +1,6 @@
 # ===============================
 # Sync DEV (Org Repo) → DEPLOY (Personal Repo)
-# with build safety check
+# Monorepo-safe (frontend + backend)
 # ===============================
 
 $ErrorActionPreference = "Stop"
@@ -14,60 +14,67 @@ $DEPLOY_BRANCH    = "main"
 
 $COMMIT_PREFIX    = "Sync changes from parent repo"
 
-# -------- PRE-CHECKS --------
-Write-Host " Checking git status..."
-$gitStatus = git status --porcelain
-if ($gitStatus) {
-    Write-Host " Working tree is not clean. Commit or stash changes first." -ForegroundColor Red
+# -------- PRE-CHECK --------
+Write-Host "Checking git status..."
+if (git status --porcelain) {
+    Write-Host "ERROR: Working tree is not clean." -ForegroundColor Red
     exit 1
 }
 
-# -------- STEP 1: Pull from DEV repo --------
-Write-Host "`n Pulling latest code from DEV (organization) repo..."
+# -------- STEP 1: Pull DEV --------
+Write-Host "`nPulling from DEV repo..."
 git remote set-url origin $DEV_REPO_URL
-
 git fetch origin
 git checkout $DEV_BRANCH
 git pull origin $DEV_BRANCH
 
-# -------- STEP 2: Switch to DEPLOY repo --------
-Write-Host "`n Switching to DEPLOY (personal) repo..."
+# -------- STEP 2: Switch to DEPLOY --------
+Write-Host "`nSwitching to DEPLOY repo..."
 git remote set-url origin $DEPLOY_REPO_URL
-
 git fetch origin
-git checkout $DEPLOY_BRANCH
-git pull origin $DEPLOY_BRANCH
 
-# -------- STEP 3: Run build check --------
-Write-Host "`n Running build check (npm run build)..."
-npm install
-npm run build
-
+# Ensure deploy branch exists
+git checkout $DEPLOY_BRANCH 2>$null
 if ($LASTEXITCODE -ne 0) {
-    Write-Host " Build failed. Fix errors before deploying." -ForegroundColor Red
-    exit 1
+    git checkout -b $DEPLOY_BRANCH
 }
 
-# -------- STEP 4: Generate incremental commit message --------
+git pull origin $DEPLOY_BRANCH 2>$null
+
+# -------- STEP 3: Build FRONTEND --------
+Write-Host "`nBuilding frontend..."
+Set-Location frontend
+npm install
+npm run build
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Frontend build failed." -ForegroundColor Red
+    exit 1
+}
+Set-Location ..
+
+# -------- STEP 4: Build BACKEND --------
+Write-Host "`nBuilding backend..."
+Set-Location backend
+npm install
+npm run build 2>$null   # backend may not have build script; ignore if missing
+Set-Location ..
+
+# -------- STEP 5: Commit & push --------
 $lastCommitMsg = git log -1 --pretty=%B
 $commitNumber = 1
-
 if ($lastCommitMsg -match "$COMMIT_PREFIX\s+(\d+)") {
     $commitNumber = [int]$matches[1] + 1
 }
-
 $commitMessage = "$COMMIT_PREFIX $commitNumber"
 
-# -------- STEP 5: Commit & push to DEPLOY repo --------
-Write-Host "`n Committing and pushing to DEPLOY repo..."
+Write-Host "`nCommitting and pushing..."
 git add .
 git commit -m "$commitMessage"
 git push origin $DEPLOY_BRANCH
 
-# -------- STEP 6: Restore DEV repo as origin --------
-Write-Host "`n Restoring DEV repo as origin..."
+# -------- STEP 6: Restore DEV --------
 git remote set-url origin $DEV_REPO_URL
 git checkout $DEV_BRANCH
 
-Write-Host "`n DONE. Build passed and changes pushed successfully." -ForegroundColor Green
-Write-Host " Commit message: $commitMessage"
+Write-Host "`nDONE. Synced successfully."
+Write-Host "Commit: $commitMessage"

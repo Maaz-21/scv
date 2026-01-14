@@ -220,15 +220,6 @@ export default function SellerRegisterForm() {
                     </button>
                 </div>
             </form>
-
-            <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">
-                    Already have a seller account?{' '}
-                    <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
-                        Sign in
-                    </Link>
-                </p>
-            </div>
         </div>
     );
 }

@@ -4,11 +4,16 @@ import { useEffect, useState } from "react";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import { apiGet, apiPost } from "@/services/apiClient";
 import { Check, X, User, Shield, Info } from "lucide-react";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import toast from "react-hot-toast";
 
 export default function SellersPage() {
   const [sellers, setSellers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [selectedSellerId, setSelectedSellerId] = useState(null);
 
   useEffect(() => {
     fetchSellers();
@@ -31,20 +36,27 @@ export default function SellersPage() {
     try {
       await apiPost(`/admin/seller/${id}/approve`, {});
       setSellers(sellers.filter((s) => s._id !== id));
-      // Optionally show a toast notification here
+      toast.success("Seller account approved");
     } catch (err) {
-      alert("Failed to approve: " + err.message);
+      toast.error("Failed to approve: " + err.message);
     }
   };
 
-  const handleReject = async (id) => {
-    if (!confirm("Are you sure you want to reject this seller account?")) return;
+  const openRejectModal = (id) => {
+    setSelectedSellerId(id);
+    setRejectModalOpen(true);
+  };
+
+  const handleReject = async () => {
+    setRejectModalOpen(false);
+    if (!selectedSellerId) return;
 
     try {
-      await apiPost(`/admin/seller/${id}/reject`, {});
-      setSellers(sellers.filter((s) => s._id !== id));
+      await apiPost(`/admin/seller/${selectedSellerId}/reject`, {});
+      setSellers(sellers.filter((s) => s._id !== selectedSellerId));
+      toast.success("Seller account rejected");
     } catch (err) {
-      alert("Failed to reject: " + err.message);
+      toast.error("Failed to reject: " + err.message);
     }
   };
 
@@ -122,7 +134,7 @@ export default function SellersPage() {
                       
                       <div className="mt-5 sm:mt-0 sm:flex-shrink-0 sm:ml-6 flex items-center gap-3">
                         <button
-                          onClick={() => handleReject(seller._id)}
+                          onClick={() => openRejectModal(seller._id)}
                           className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                         >
                           <X className="w-4 h-4 mr-2" />
@@ -144,6 +156,16 @@ export default function SellersPage() {
           )}
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={rejectModalOpen}
+        onClose={() => setRejectModalOpen(false)}
+        onConfirm={handleReject}
+        title="Reject Seller Account"
+        message="Are you sure you want to reject this seller account? This action cannot be undone."
+        confirmText="Yes, Reject"
+        cancelText="Cancel"
+        isDangerous={true}
+      />
     </AdminLayout>
   );
 }                        

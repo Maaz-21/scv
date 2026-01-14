@@ -5,6 +5,7 @@ import AdminLayout from "@/components/layouts/AdminLayout";
 import ProtectedLayout from "@/components/layouts/ProtectedLayout";
 import { apiGet, apiPatch } from "@/services/apiClient";
 import { Package, Truck, CheckCircle, Clock, ShoppingBag, ChevronDown } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([]);
@@ -53,10 +54,10 @@ export default function AdminOrdersPage() {
       delete updates[orderId];
       setStatusUpdates(updates);
       
-      alert("Order status updated successfully");
+      toast.success("Order status updated successfully");
     } catch (err) {
       console.error("Status update failed", err);
-      alert("Failed to update status: " + (err.message || "Unknown error"));
+      toast.error("Failed to update status: " + (err.message || "Unknown error"));
     } finally {
       setUpdatingId(null);
     }

@@ -6,10 +6,10 @@ import { ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-slate-50">
+    <div className="min-h-screen flex flex-col justify-center pt-32 pb-12 sm:px-6 lg:px-8 bg-slate-50">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center mb-6">
-            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mt-2">
             Welcome Back
             </h2>
             <p className="mt-2 text-sm text-slate-600">

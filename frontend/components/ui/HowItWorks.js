@@ -1,132 +1,150 @@
-import { Upload, ClipboardCheck, Truck, DollarSign, Search, ShoppingCart } from "lucide-react";
+"use client";
+
+import { Upload, ClipboardCheck, Truck, DollarSign, Search, ShoppingCart, ArrowDown } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function HowItWorks() {
-  const sellerSteps = [
-      {
-          id: 1,
-          title: "Upload Item",
-          desc: "Submit details and photos of your scrap materials.",
-          icon: <Upload className="h-6 w-6 text-amber-600" />
-      },
-      {
-          id: 2,
-          title: "Verification",
-          desc: "Our team reviews and approves your submission.",
-          icon: <ClipboardCheck className="h-6 w-6 text-amber-600" />
-      },
-      {
-          id: 3,
-          title: "Get Paid",
-          desc: "Once sold, receive payment securely.",
-          icon: <DollarSign className="h-6 w-6 text-amber-600" />
-      }
-  ];
-
-  const buyerSteps = [
-      {
-          id: 1,
-          title: "Browse Listings",
-          desc: "Find verified scrap materials in our marketplace.",
-          icon: <Search className="h-6 w-6 text-emerald-600" />
-      },
-      {
-          id: 2,
-          title: "Place Order",
-          desc: "Securely purchase items directly through the platform.",
-          icon: <ShoppingCart className="h-6 w-6 text-emerald-600" />
-      },
-      {
-          id: 3,
-          title: "Pickup & Delivery",
-          desc: "Coordinate pickup or delivery with our logistics team.",
-          icon: <Truck className="h-6 w-6 text-emerald-600" />
-      }
+  const steps = [
+    {
+      id: 1,
+      role: "seller",
+      title: "Snap & Upload",
+      desc: "Take clear photos of your scrap metals or e-waste. Add weight estimates and location details in seconds.",
+      icon: <Upload className="h-6 w-6 text-white" />,
+      color: "bg-amber-500",
+      lightColor: "bg-amber-50"
+    },
+    {
+      id: 2,
+      role: "buyer",
+      title: "Browse Verified Listings",
+      desc: "Filter by material type, location, and quantity. See detailed photos and verification status instantly.",
+      icon: <Search className="h-6 w-6 text-white" />,
+      color: "bg-emerald-500",
+      lightColor: "bg-emerald-50"
+    },
+    {
+      id: 3,
+      role: "seller",
+      title: "Get Verified",
+      desc: "Our experts review your listing. Once approved, it goes live to thousands of industrial buyers.",
+      icon: <ClipboardCheck className="h-6 w-6 text-white" />,
+      color: "bg-amber-500",
+      lightColor: "bg-amber-50"
+    },
+    {
+      id: 4,
+      role: "buyer",
+      title: "Secure Purchase",
+      desc: "Place orders securely. Funds are held in escrow until you verify the goods on pickup.",
+      icon: <ShoppingCart className="h-6 w-6 text-white" />,
+      color: "bg-emerald-500",
+      lightColor: "bg-emerald-50"
+    },
+    {
+      id: 5,
+      role: "seller",
+      title: "Get Paid",
+      desc: "Coordinate pickup seamlessly. Payment is released to your account immediately after handover.",
+      icon: <DollarSign className="h-6 w-6 text-white" />,
+      color: "bg-amber-500",
+      lightColor: "bg-amber-50"
+    }
   ];
 
   return (
-    <section className="py-24 bg-white relative overflow-hidden">
+    <section className="py-24 bg-white relative overflow-hidden" id="how-it-works">
        {/* Background Decoration */}
        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-           <div className="absolute top-1/2 left-0 w-64 h-64 bg-slate-50 rounded-full blur-3xl -translate-y-1/2"></div>
-           <div className="absolute top-1/2 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl -translate-y-1/2"></div>
+           <div className="absolute top-1/2 left-0 w-96 h-96 bg-slate-50 rounded-full blur-3xl -translate-y-1/2 opacity-50"></div>
+           <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-50 rounded-full blur-3xl translate-y-1/4 opacity-50"></div>
        </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-base font-semibold text-indigo-600 tracking-wide uppercase">Process</h2>
-          <p className="mt-2 text-3xl font-extrabold text-slate-900 sm:text-4xl">
+        <div className="text-center max-w-3xl mx-auto mb-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex justify-center mb-4"
+          >
+             <span className="px-4 py-1.5 rounded-full bg-slate-100 text-slate-600 text-sm font-semibold uppercase tracking-wider">
+               Simple Process
+             </span>
+          </motion.div>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-4xl font-extrabold text-slate-900 sm:text-5xl tracking-tight mb-4"
+          >
             How It Works
-          </p>
-          <p className="mt-4 text-xl text-slate-500">
-            Simple, transparent, and secure process for everyone involved.
-          </p>
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-xl text-slate-500"
+          >
+            A seamless ecosystem connecting scrap sellers with industrial buyers.
+          </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8">
-            {/* Seller Column */}
-            <div className="relative group">
-                <div className="absolute inset-0 bg-amber-50 rounded-3xl transform rotate-1 group-hover:rotate-2 transition-transform duration-300"></div>
-                <div className="relative bg-white border border-amber-100 rounded-3xl p-8 shadow-xl shadow-amber-100/50 h-full">
-                    <div className="flex items-center gap-4 mb-8">
-                         <div className="p-3 bg-amber-100 rounded-xl">
-                             <DollarSign className="h-8 w-8 text-amber-600" />
-                         </div>
-                         <h3 className="text-2xl font-bold text-slate-800">For Sellers</h3>
-                    </div>
-                    
-                    <div className="space-y-8">
-                        {sellerSteps.map((step, idx) => (
-                             <div key={idx} className="flex gap-4">
-                                 <div className="flex-shrink-0">
-                                     <div className="flex items-center justify-center h-10 w-10 rounded-full bg-amber-50 text-amber-700 font-bold border border-amber-200">
-                                         {step.id}
-                                     </div>
-                                 </div>
-                                 <div>
-                                     <h4 className="text-lg font-semibold text-slate-900 group-hover:text-amber-700 transition-colors">{step.title}</h4>
-                                     <p className="mt-1 text-slate-500 leading-relaxed">{step.desc}</p>
-                                 </div>
-                             </div>
-                        ))}
-                    </div>
-                    
-                    <div className="mt-8 pt-6 border-t border-amber-50">
-                        <p className="text-sm text-amber-600 font-medium">Start separating your scrap today.</p>
-                    </div>
-                </div>
-            </div>
+        <div className="relative">
+            {/* Vertical Line for Desktop */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-to-b from-transparent via-slate-200 to-transparent hidden lg:block"></div>
 
-            {/* Buyer Column */}
-             <div className="relative group">
-                <div className="absolute inset-0 bg-emerald-50 rounded-3xl transform -rotate-1 group-hover:-rotate-2 transition-transform duration-300"></div>
-                <div className="relative bg-white border border-emerald-100 rounded-3xl p-8 shadow-xl shadow-emerald-100/50 h-full">
-                    <div className="flex items-center gap-4 mb-8">
-                         <div className="p-3 bg-emerald-100 rounded-xl">
-                             <ShoppingCart className="h-8 w-8 text-emerald-600" />
-                         </div>
-                         <h3 className="text-2xl font-bold text-slate-800">For Buyers</h3>
-                    </div>
-                    
-                    <div className="space-y-8">
-                        {buyerSteps.map((step, idx) => (
-                             <div key={idx} className="flex gap-4">
-                                 <div className="flex-shrink-0">
-                                     <div className="flex items-center justify-center h-10 w-10 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
-                                         {step.id}
-                                     </div>
-                                 </div>
-                                 <div>
-                                     <h4 className="text-lg font-semibold text-slate-900 group-hover:text-emerald-700 transition-colors">{step.title}</h4>
-                                     <p className="mt-1 text-slate-500 leading-relaxed">{step.desc}</p>
-                                 </div>
-                             </div>
-                        ))}
-                    </div>
+            <div className="space-y-12 lg:space-y-24">
+                {steps.map((step, idx) => (
+                    <motion.div 
+                        key={step.id}
+                        initial={{ opacity: 0, y: 50 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-100px" }}
+                        transition={{ duration: 0.5, delay: idx * 0.1 }}
+                        className={`relative flex flex-col lg:flex-row gap-8 items-center ${idx % 2 === 0 ? 'lg:flex-row-reverse' : ''}`}
+                    >
+                        {/* Timeline Node - Desktop */}
+                        <div className="absolute left-1/2 transform -translate-x-1/2 w-12 h-12 rounded-full border-4 border-white shadow-md z-10 hidden lg:flex items-center justify-center bg-slate-50">
+                            <span className={`text-sm font-bold ${step.role === 'seller' ? 'text-amber-600' : 'text-emerald-600'}`}>
+                                {step.id}
+                            </span>
+                        </div>
 
-                    <div className="mt-8 pt-6 border-t border-emerald-50">
-                        <p className="text-sm text-emerald-600 font-medium">Verified quality, guaranteed.</p>
-                    </div>
-                </div>
+                        {/* Content Card */}
+                        <div className="flex-1 w-full lg:w-1/2">
+                           <motion.div 
+                              whileHover={{ y: -5 }}
+                              className={`p-8 rounded-3xl bg-white border border-slate-100 shadow-xl ${
+                                  step.role === 'seller' ? 'shadow-amber-100/40' : 'shadow-emerald-100/40'
+                              } group`}
+                           >
+                               <div className="flex items-start justify-between mb-6">
+                                   <div className={`p-4 rounded-2xl ${step.color} shadow-lg text-white transform group-hover:scale-110 transition-transform duration-300`}>
+                                       {step.icon}
+                                   </div>
+                                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
+                                       step.role === 'seller' 
+                                         ? 'bg-amber-50 text-amber-700' 
+                                         : 'bg-emerald-50 text-emerald-700'
+                                   }`}>
+                                       {step.role}
+                                   </span>
+                               </div>
+                               
+                               <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors">
+                                   {step.title}
+                               </h3>
+                               <p className="text-slate-500 leading-relaxed text-lg">
+                                   {step.desc}
+                               </p>
+                           </motion.div>
+                        </div>
+
+                        {/* Spacer for the other side */}
+                        <div className="flex-1 hidden lg:block"></div>
+                    </motion.div>
+                ))}
             </div>
         </div>
       </div>

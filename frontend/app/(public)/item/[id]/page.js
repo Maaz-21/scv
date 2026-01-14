@@ -61,8 +61,7 @@ export default function ItemPage({ params }) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
-      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 pt-24 lg:pt-32 w-full">
          <ItemDetails item={item} />
       </main>
     </div>

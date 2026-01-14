@@ -5,12 +5,18 @@ import AdminLayout from "@/components/layouts/AdminLayout";
 import ProtectedLayout from "@/components/layouts/ProtectedLayout";
 import { apiGet, apiPost } from "@/services/apiClient";
 import { Search, CheckCircle, XCircle, FileText, ClipboardList } from "lucide-react";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import toast from "react-hot-toast";
 
 export default function InspectionsPage() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [notes, setNotes] = useState({});
+
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [selectedListingId, setSelectedListingId] = useState(null);
+  const [inspectionResult, setInspectionResult] = useState(null);
 
   useEffect(() => {
     fetchInspections();
@@ -27,19 +33,27 @@ export default function InspectionsPage() {
     }
   };
 
-  const handleInspection = async (id, result) => {
-    if (!confirm(`Mark this item as ${result.toUpperCase()}?`)) return;
+  const openInspectionModal = (id, result) => {
+    setSelectedListingId(id);
+    setInspectionResult(result);
+    setConfirmModalOpen(true);
+  };
+
+  const handleInspection = async () => {
+    setConfirmModalOpen(false);
+    if (!selectedListingId || !inspectionResult) return;
 
     setActionLoading(true);
     try {
-      await apiPost(`/admin/listings/${id}/inspection`, {
-        result,
-        notes: notes[id] || ""
+      await apiPost(`/admin/listings/${selectedListingId}/inspection`, {
+        result: inspectionResult,
+        notes: notes[selectedListingId] || ""
       });
-      setListings((prev) => prev.filter((l) => l._id !== id));
+      setListings((prev) => prev.filter((l) => l._id !== selectedListingId));
+      toast.success(`Item marked as ${inspectionResult.toUpperCase()}`);
     } catch (err) {
       console.error("Inspection update failed", err);
-      alert("Failed to update inspection status");
+      toast.error("Failed to update inspection status");
     } finally {
       setActionLoading(false);
     }
@@ -114,7 +128,7 @@ export default function InspectionsPage() {
                               />
                               <div className="flex gap-3">
                                 <button
-                                  onClick={() => handleInspection(listing._id, "failed")}
+                                  onClick={() => openInspectionModal(listing._id, "failed")}
                                   disabled={actionLoading}
                                   className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 transition-colors"
                                 >
@@ -122,7 +136,7 @@ export default function InspectionsPage() {
                                   Fail
                                 </button>
                                 <button
-                                  onClick={() => handleInspection(listing._id, "passed")}
+                                  onClick={() => openInspectionModal(listing._id, "passed")}
                                   disabled={actionLoading}
                                   className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 transition-colors"
                                 >
@@ -138,6 +152,16 @@ export default function InspectionsPage() {
             )}
           </div>
         </div>
+        <ConfirmationModal
+          isOpen={confirmModalOpen}
+          onClose={() => setConfirmModalOpen(false)}
+          onConfirm={handleInspection}
+          title={`Mark Inspection as ${inspectionResult?.toUpperCase()}`}
+          message={`Are you sure you want to mark this item as ${inspectionResult?.toUpperCase()}?`}
+          confirmText="Confirm Status"
+          cancelText="Back"
+          isDangerous={inspectionResult === "failed"}
+        />
       </AdminLayout>
     </ProtectedLayout>
   );

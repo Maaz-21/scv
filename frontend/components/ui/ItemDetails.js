@@ -5,12 +5,15 @@ import { useAuth } from "@/context/AuthContext";
 import { apiPost } from "@/services/apiClient";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import ConfirmationModal from "./ConfirmationModal";
+import toast from "react-hot-toast";
 
 export default function ItemDetails({ item }) {
   const { user, role, isAuthenticated } = useAuth();
   const router = useRouter();
   const [buying, setBuying] = useState(false);
   const [error, setError] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const {
       _id,
@@ -24,25 +27,31 @@ export default function ItemDetails({ item }) {
       status
   } = item;
 
-  const handleBuy = async () => {
-      if (!confirm("Are you sure you want to purchase this item?")) return;
-      
+  const handleBuyClick = () => {
+      setShowConfirmModal(true);
+  };
+
+  const handlePurchase = async () => {
+      setShowConfirmModal(false);
       setBuying(true);
       setError(null);
       
       try {
           await apiPost(`/marketplace/order/${_id}`, {});
+          toast.success("Order placed successfully!");
           // Specific redirect instruction from requirement: /dashboard/buyer/orders
           router.push("/dashboard/buyer/orders");
       } catch (err) {
           console.error("Purchase failed:", err);
-          setError(err.message || "Failed to place order. Please try again.");
+          const msg = err.message || "Failed to place order. Please try again.";
+          toast.error(msg);
+          setError(msg);
           setBuying(false);
       }
   };
 
   // Simple image carousel (just first image for MVP, or grid)
-  const isAvailable = status === 'live' || status === 'admin_approved'; // Assuming admin_approved might show but live is the filtered state for marketplace
+  const isAvailable = status === 'live' || status === 'inspection_passed' || status === 'admin_approved'; // Updated to include inspection_passed
 
   return (
     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -121,7 +130,7 @@ export default function ItemDetails({ item }) {
              <div className="mt-6">
                  {isAuthenticated && role === "buyer" ? (
                      <button
-                        onClick={handleBuy}
+                        onClick={handleBuyClick}
                         disabled={buying || !isAvailable}
                         className={`w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white ${
                             !isAvailable 
@@ -150,6 +159,15 @@ export default function ItemDetails({ item }) {
              </div>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handlePurchase}
+        title="Confirm Purchase"
+        message={`Are you sure you want to purchase "${title}" for $${price?.toLocaleString()}?`}
+        confirmText="Yes, Purchase"
+        cancelText="No, Cancel"
+      />
     </div>
   );
 }

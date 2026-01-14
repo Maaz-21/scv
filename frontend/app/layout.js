@@ -1,5 +1,6 @@
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { Toaster } from "react-hot-toast";
 
 export const metadata = {
   title: "ScanvengerHunt Marketplace",
@@ -14,6 +15,7 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <AuthProvider>{children}</AuthProvider>
+        <Toaster position="bottom-left" />
       </body>
     </html>
   );

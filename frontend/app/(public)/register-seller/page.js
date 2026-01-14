@@ -6,7 +6,7 @@ import { ArrowLeft, AlertCircle } from "lucide-react";
 
 export default function SellerRegisterPage() {
   return (
-    <div className="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-slate-50">
+    <div className="min-h-screen flex flex-col justify-center pt-32 pb-12 sm:px-6 lg:px-8 bg-slate-50">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
          <div className="text-center mb-6">
             <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">

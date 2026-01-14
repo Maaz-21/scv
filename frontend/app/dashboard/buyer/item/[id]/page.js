@@ -8,6 +8,8 @@ import BuyerLayout from "@/components/layouts/BuyerLayout";
 import ProtectedLayout from "@/components/layouts/ProtectedLayout";
 import Link from "next/link";
 import { ArrowLeft, Tag, MapPin, Truck, ShieldCheck, AlertCircle } from "lucide-react";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import toast from "react-hot-toast";
 
 export default function BuyerItemDetailsPage({ params }) {
   // Unwrap params using React.use()
@@ -18,6 +20,7 @@ export default function BuyerItemDetailsPage({ params }) {
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState(false);
   const [error, setError] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -43,8 +46,12 @@ export default function BuyerItemDetailsPage({ params }) {
     }
   };
 
-  const handleBuy = async () => {
-      if (!confirm("Are you sure you want to purchase this item?")) return;
+  const handleBuyClick = () => {
+      setShowConfirmModal(true);
+  };
+
+  const handlePurchase = async () => {
+      setShowConfirmModal(false);
 
       if (!window.Razorpay) {
           setError("Payment SDK not loaded. Please refresh.");
@@ -80,14 +87,19 @@ export default function BuyerItemDetailsPage({ params }) {
                       });
 
                       if (verifyResponse.success) {
+                          toast.success("Order placed successfully!");
                           router.push("/dashboard/buyer/orders");
                       } else {
-                          setError("Payment Verification Failed");
+                          const msg = "Payment Verification Failed";
+                          toast.error(msg);
+                          setError(msg);
                           setBuying(false);
                       }
                   } catch (verifyError) {
                       console.error("Verification error", verifyError);
-                      setError("Payment Verification Failed");
+                      const msg = "Payment Verification Failed";
+                      toast.error(msg);
+                      setError(msg);
                       setBuying(false);
                   }
               },
@@ -101,16 +113,19 @@ export default function BuyerItemDetailsPage({ params }) {
 
           const rzp = new window.Razorpay(options);
           rzp.on('payment.failed', function (response){
-               setError("Payment Failed: " + response.error.description);
+               const msg = "Payment Failed: " + response.error.description;
+               toast.error(msg);
+               setError(msg);
                setBuying(false);
           });
           rzp.open();
 
       } catch (err) {
           console.error("Purchase failed:", err);
-          setError(err.message || "Failed to initiate payment. Please try again.");
-          setBuying(false);
-      }
+          const msg = err.message || "Failed to initiate payment. Please try again.";
+          toast.error(msg);
+          setError(msg);
+      } 
   };
   
   if (loading) {
@@ -231,7 +246,7 @@ export default function BuyerItemDetailsPage({ params }) {
 
                       <div className="mt-auto">
                           {error && (
-                              <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-md">
+                              <div className="mbClick-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-md">
                                   <div className="flex">
                                       <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
                                       <span className="text-sm text-red-700">{error}</span>
@@ -240,7 +255,7 @@ export default function BuyerItemDetailsPage({ params }) {
                           )}
 
                           <button
-                              onClick={handleBuy}
+                              onClick={handleBuyClick}
                               disabled={buying || !isAvailable}
                               className={`w-full flex items-center justify-center py-4 px-8 border border-transparent rounded-2xl shadow-lg text-lg font-bold text-white transition-all duration-300 hover:-translate-y-1 ${
                                   !isAvailable
@@ -270,6 +285,15 @@ export default function BuyerItemDetailsPage({ params }) {
              </div>
         </div>
       </BuyerLayout>
+      <ConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handlePurchase}
+        title="Confirm Purchase"
+        message={`Are you sure you want to purchase "${title}" for $${price?.toLocaleString()}?`}
+        confirmText="Yes, Purchase"
+        cancelText="No, Cancel"
+      />
     </ProtectedLayout>
   );
 }
