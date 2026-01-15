@@ -6,11 +6,16 @@ const sellerRoutes = require("./routes/seller.routes");
 const adminRoutes = require("./routes/admin.routes");
 const buyerRoutes = require("./routes/buyer.routes");
 const pickupRoutes = require("./routes/pickup.routes");
+const webhookRoutes = require("./routes/webhook.routes");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
 app.use(cors());
+
+// Webhooks must be mounted BEFORE express.json() because they need raw body
+app.use("/api/webhooks", webhookRoutes);
+
 app.use(express.json());
 
 app.get("/health", (req, res) => {

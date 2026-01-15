@@ -42,7 +42,10 @@ exports.createOrder = catchAsync(async (req, res) => {
     amount: listing.price * 100, // INR -> paise
     currency: "INR",
     receipt: `order_${order._id}`,
-    payment_capture: 1
+    payment_capture: 1,
+    notes: {
+      order_id: order._id.toString()
+    }
   };
 
   let razorpayOrder; 
